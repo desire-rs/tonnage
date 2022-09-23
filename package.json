@@ -1,7 +1,27 @@
 {
   "name": "tonnage",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "author": "Mankong.Zhao <mankong.zhao@aax.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "parcel-namer-rewrite": "^2.0.0-rc.2",
+    "vue": "^3.2.39"
+  },
+  "scripts": {
+    "dev": "ENV_NAME=dev parcel serve web/index.pug",
+    "build": "parcel build web/index.pug --public-url ./assets"
+  },
+  "devDependencies": {
+    "@parcel/transformer-pug": "2.7.0",
+    "@parcel/transformer-vue": "2.7.0",
+    "parcel": "^2.7.0"
+  },
+  "parcel-namer-rewrite": {
+    "chain": "@parcel/namer-default",
+    "rules": {}
+  },
+  "targets": {
+    "main": false
+  }
 }

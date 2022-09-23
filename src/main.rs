@@ -19,6 +19,8 @@ use types::AnyResult;
 use controller::default_controller;
 use controller::user_controller;
 use controller::weight_controller;
+use desire::ServeFile;
+use desire::ServeDir;
 #[tokio::main]
 async fn main() -> AnyResult<()> {
   let subscriber = FmtSubscriber::builder()
@@ -27,7 +29,9 @@ async fn main() -> AnyResult<()> {
   tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
   info!("APP running at {:?}", ADDR);
   let mut app = Router::new();
-  app.get("/", default_controller::hello);
+  app.get("/", ServeFile::new("dist/index.html".into()));
+  app.get("/assets/:file", ServeDir::new("dist/assets".into()));
+
   app.get("/hello", default_controller::hello);
   app.get("/hello_page", default_controller::hello_page);
   app.get("/hello_option", default_controller::hello_option);
