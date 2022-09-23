@@ -28,3 +28,15 @@ pub async fn db_reset(_req: Request) -> ApiResult<String> {
   conn.execute_batch(CLEAR_SQL)?;
   Ok(Resp::data("OK".to_string()))
 }
+
+pub async fn sign_up(_req: Request) -> ApiResult<String> {
+  Ok(Resp::data("sign_up".to_string()))
+}
+
+pub async fn sign_in(_req: Request) -> ApiResult<String> {
+  Ok(Resp::data("sign_in".to_string()))
+}
+
+pub async fn sign_out(_req: Request) -> ApiResult<String> {
+  Ok(Resp::data("sign_out".to_string()))
+}

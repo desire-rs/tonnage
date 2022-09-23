@@ -7,6 +7,7 @@ mod error;
 mod libs;
 mod middleware;
 mod schema;
+mod service;
 mod types;
 mod utils;
 
@@ -19,8 +20,8 @@ use types::AnyResult;
 use controller::default_controller;
 use controller::user_controller;
 use controller::weight_controller;
-use desire::ServeFile;
 use desire::ServeDir;
+use desire::ServeFile;
 #[tokio::main]
 async fn main() -> AnyResult<()> {
   let subscriber = FmtSubscriber::builder()
@@ -28,7 +29,9 @@ async fn main() -> AnyResult<()> {
     .finish();
   tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
   info!("APP running at {:?}", ADDR);
+
   let mut app = Router::new();
+  app.with(middleware::Logger);
   app.get("/", ServeFile::new("dist/index.html".into()));
   app.get("/assets/:file", ServeDir::new("dist/assets".into()));
 
@@ -38,10 +41,15 @@ async fn main() -> AnyResult<()> {
   app.get("/db_init", default_controller::db_init);
   app.get("/db_reset", default_controller::db_reset);
 
+  app.post("/sign_in", default_controller::sign_in);
+  app.post("/sign_up", default_controller::sign_up);
+  app.post("/sign_out", default_controller::sign_out);
+
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);
   app.put("/user/:id", user_controller::update);
   app.get("/user/:id", user_controller::get_by_id);
+  app.get("/user/:id/weight", user_controller::get_user_weights);
   app.delete("/user/:id", user_controller::remove);
 
   app.get("/weight", weight_controller::get_all);

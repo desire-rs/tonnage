@@ -1,5 +1,5 @@
 use crate::config::DATABASE_URI;
-use crate::schema::User;
+use crate::schema::{User, Weight};
 use crate::types::{ApiOptionResult, ApiPageResult, ApiResult, PageData, Resp};
 use desire::Request;
 use rusqlite::Connection;
@@ -83,4 +83,27 @@ pub async fn get_by_id(req: Request) -> ApiOptionResult<User> {
     })
   })?;
   Ok(Resp::data(Some(user)))
+}
+
+pub async fn get_user_weights(req: Request) -> ApiPageResult<Weight> {
+  let conn = Connection::open(DATABASE_URI)?;
+  let user_id = req.get_param::<i32>("id")?;
+  let mut stmt = conn
+    .prepare("SELECT id, userId, weight, createdAt, updatedAt FROM weights where userId = ?")?;
+  let user_iter = stmt.query_map([&user_id], |row| {
+    Ok(Weight {
+      id: row.get(0)?,
+      user_id: row.get(1)?,
+      weight: row.get(2)?,
+      created_at: row.get(3)?,
+      updated_at: row.get(4)?,
+    })
+  })?;
+  let mut list: Vec<Weight> = Vec::new();
+  for weight in user_iter {
+    list.push(weight?);
+  }
+  let len = list.len() as u64;
+  let result = PageData::new(list, len);
+  Ok(Resp::data(result))
 }

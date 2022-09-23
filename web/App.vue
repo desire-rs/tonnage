@@ -8,8 +8,13 @@ export default {
   data() {
     return {
       name: "Tonnage",
+      userId: null,
+      weights: [],
     };
   },
+  methods: {
+    
+  }
 };
 </script>
 

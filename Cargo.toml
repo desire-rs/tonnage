@@ -7,6 +7,7 @@ version = "0.0.1"
 
 [dependencies]
 anyhow = "1"
+async-trait = "0.1.57"
 chrono = {version = "0.4", features = ["serde"]}
 desire = {path = '../desire'}
 rusqlite = {version = "0.28.0", features = ["chrono", "serde_json"]}
