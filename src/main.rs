@@ -9,12 +9,12 @@ mod schema;
 mod types;
 
 use config::ADDR;
+use desire::{IntoResponse, Request, Router};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-
-use desire::{IntoResponse, Request, Router};
+use types::AnyResult;
 #[tokio::main]
-async fn main() {
+async fn main() -> AnyResult<()> {
   let subscriber = FmtSubscriber::builder()
     .with_max_level(Level::INFO)
     .finish();
@@ -22,6 +22,9 @@ async fn main() {
   info!("APP running at {:?}", ADDR);
   let mut app = Router::new();
   app.get("/", controller::hello);
+  app.get("/db_init", controller::db_init);
+  app.get("/db_reset", controller::db_reset);
   let sever = desire::new(ADDR);
-  sever.run(app).await.unwrap();
+  sever.run(app).await?;
+  Ok(())
 }

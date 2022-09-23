@@ -1,5 +1,6 @@
 use desire::{IntoResponse, Response, Result};
 use thiserror::Error;
+
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("desire error {0:?}")]
@@ -8,6 +9,8 @@ pub enum Error {
   JsonError(#[from] serde_json::Error),
   #[error("io error")]
   IoError(#[from] std::io::Error),
+  #[error(" rusqlite::Error {0:?}")]
+  SqliteError(#[from] rusqlite::Error),
 }
 
 impl IntoResponse for Error {

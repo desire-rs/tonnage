@@ -65,5 +65,3 @@ where
     PageData { list, total }
   }
 }
-
-pub type State<T> = Arc<Mutex<T>>;
