@@ -1,11 +1,8 @@
 use crate::error::Error;
 use desire::IntoResponse;
 use desire::Response;
-use std::sync::Arc;
-use std::sync::Mutex;
 pub type ApiResult<T> = Result<Resp<T>, Error>;
 pub type AnyResult<T> = Result<T, anyhow::Error>;
-pub type ApiAnyResult<T> = Result<T, Error>;
 pub type ApiPageResult<T> = Result<Resp<PageData<T>>, Error>;
 pub type ApiOptionResult<T> = Result<Resp<Option<T>>, Error>;
 
@@ -26,13 +23,6 @@ where
       success: true,
       msg: "OK".to_string(),
       data: Some(data),
-    }
-  }
-  pub fn error(error: String) -> Self {
-    Resp {
-      success: false,
-      msg: error,
-      data: None,
     }
   }
 }

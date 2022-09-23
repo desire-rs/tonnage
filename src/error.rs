@@ -3,6 +3,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
+  #[error("anyhow error {0:?}")]
+  AnyhowError(#[from] anyhow::Error),
   #[error("desire error {0:?}")]
   DesireError(#[from] desire::Error),
   #[error("json error {0:?}")]
