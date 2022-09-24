@@ -33,7 +33,7 @@ async fn main() -> AnyResult<()> {
   let mut app = Router::new();
   app.with(middleware::Logger);
   app.get("/", ServeFile::new("dist/index.html".into()));
-  app.get("/assets/:file", ServeDir::new("dist/assets".into()));
+  app.get("/assets/:file", ServeDir::new("dist".into()));
 
   app.get("/hello", default_controller::hello);
   app.get("/hello_page", default_controller::hello_page);
@@ -57,6 +57,9 @@ async fn main() -> AnyResult<()> {
   app.put("/weight/:id", weight_controller::update);
   app.get("/weight/:id", weight_controller::get_by_id);
   app.delete("/weight/:id", weight_controller::remove);
+
+  // chart
+  app.get("/chart", default_controller::chart);
 
   let sever = desire::new(ADDR);
   sever.run(app).await?;

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::utils::now_str;
+use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
@@ -40,4 +40,31 @@ pub struct Weight {
 
 fn default_password() -> String {
   "123456".to_owned()
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChartQuery {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub user_id: Option<i32>,
+  pub date_start: String,
+  pub date_end: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Chart {
+  pub user_id: i32,
+  pub weight: f32,
+  pub date: String,
+}
+
+impl ChartQuery {
+  pub fn new(date_start: String, date_end: String) -> Self {
+    ChartQuery {
+      user_id: None,
+      date_start,
+      date_end,
+    }
+  }
 }
