@@ -55,6 +55,12 @@ pub struct ChartQuery {
 #[serde(rename_all = "camelCase")]
 pub struct Chart {
   pub user_id: i32,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub nickname: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub email: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub mobile: Option<String>,
   pub weight: f32,
   pub date: String,
 }

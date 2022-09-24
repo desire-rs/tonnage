@@ -2,23 +2,59 @@
 .container
   h1(v-text="name")
   canvas(id="myChart" width="1000")
+  textarea(v-text="JSON.stringify(data, null, 2)" style="height: 500px")
 </template>
 
 <script>
 import Chart from 'chart.js/auto'
-
+import axios from 'axios';
+import _ from 'lodash';
 export default {
   data() {
     return {
       name: "Tonnage",
       userId: null,
       weights: [],
+      data: [],
+      labels: [],
+      datasets: []
     };
   },
   mounted() {
-    this.chart()
+    // this.chart()
+    this.getChartData()
   },
   methods: {
+    async getChartData() {
+      let result = await axios.get('http://localhost:12306/chart');
+      this.data = result.data;
+      const users = _.groupBy(result.data.data.list, 'userId');
+      for (const user of Object.values(users)) {
+        this.labels = _.map(user, 'date');
+        this.datasets.push({
+          label: user[0].nickname,
+          data: _.map(user, 'weight'),
+          // borderColor: 'rgba(255,0,0,1)',
+          // backgroundColor: 'rgba(255,0,0,0.5)',
+          fill: false,
+          lineTension: 0,
+        })
+      }
+
+      console.log(this.labels);
+      console.log(this.datasets);
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: this.labels,
+          datasets: this.datasets
+        },
+        options: {
+          responsive: false
+        }
+      });
+    },
     chart() {
       const ctx = document.getElementById('myChart').getContext('2d');;
       new Chart(ctx, {

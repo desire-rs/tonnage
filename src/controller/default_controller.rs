@@ -59,25 +59,32 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
   info!("query {:?}", query);
   let sql = r#"
   SELECT
-    userId,
-    weight,
-    DATE(createdAt) date
-  FROM
-    weights
-  WHERE
-    createdAt >= ?
-    AND createdAt <= ?
-  GROUP BY
-    userId,
-    date
+	userId,
+	users.nickname,
+	users.email,
+	users.mobile,
+	weight,
+	DATE(weights.createdAt) date
+FROM
+	weights
+	INNER JOIN users ON weights.userId = users.id
+WHERE
+	weights.createdAt >= ?
+	AND weights.createdAt <= ?
+GROUP BY
+	userId,
+	date
 "#;
 
   let mut stmt = conn.prepare(sql)?;
   let chart_iter = stmt.query_map([&query.date_start, &query.date_end], |row| {
     Ok(Chart {
       user_id: row.get(0)?,
-      weight: row.get(1)?,
-      date: row.get(2)?,
+      nickname: row.get(1)?,
+      email: row.get(2)?,
+      mobile: row.get(3)?,
+      weight: row.get(4)?,
+      date: row.get(5)?,
     })
   })?;
   let mut list: Vec<Chart> = Vec::new();
