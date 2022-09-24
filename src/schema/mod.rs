@@ -61,6 +61,10 @@ pub struct Chart {
   pub email: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub mobile: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub borderColor: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub backgroundColor: Option<String>,
   pub weight: f32,
   pub date: String,
 }

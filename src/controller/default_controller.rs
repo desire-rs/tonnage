@@ -59,21 +59,23 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
   info!("query {:?}", query);
   let sql = r#"
   SELECT
-	userId,
-	users.nickname,
-	users.email,
-	users.mobile,
-	weight,
-	DATE(weights.createdAt) date
-FROM
-	weights
-	INNER JOIN users ON weights.userId = users.id
-WHERE
-	weights.createdAt >= ?
-	AND weights.createdAt <= ?
-GROUP BY
-	userId,
-	date
+    userId,
+    users.nickname,
+    users.email,
+    users.mobile,
+    JSON_EXTRACT(users.meta, '$.borderColor') borderColor,
+    JSON_EXTRACT(users.meta, '$.backgroundColor') backgroundColor,
+    weight,
+    DATE(weights.createdAt) date
+  FROM
+    weights
+    INNER JOIN users ON weights.userId = users.id
+  WHERE
+    weights.createdAt >= ?
+    AND weights.createdAt <= ?
+  GROUP BY
+    userId,
+    date
 "#;
 
   let mut stmt = conn.prepare(sql)?;
@@ -83,8 +85,10 @@ GROUP BY
       nickname: row.get(1)?,
       email: row.get(2)?,
       mobile: row.get(3)?,
-      weight: row.get(4)?,
-      date: row.get(5)?,
+      borderColor: row.get(4)?,
+      backgroundColor: row.get(5)?,
+      weight: row.get(6)?,
+      date: row.get(7)?,
     })
   })?;
   let mut list: Vec<Chart> = Vec::new();
