@@ -85,8 +85,8 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
       nickname: row.get(1)?,
       email: row.get(2)?,
       mobile: row.get(3)?,
-      borderColor: row.get(4)?,
-      backgroundColor: row.get(5)?,
+      border_color: row.get(4)?,
+      background_color: row.get(5)?,
       weight: row.get(6)?,
       date: row.get(7)?,
     })

@@ -1,4 +1,4 @@
-use crate::utils::now_str;
+use crate::utils::{now_str, now_fmt};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,9 +20,9 @@ pub struct User {
   pub meta: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub subscription: Option<i8>,
-  #[serde(default = "now_str")]
+  #[serde(default = "now_fmt")]
   pub created_at: String,
-  #[serde(default = "now_str")]
+  #[serde(default = "now_fmt")]
   pub updated_at: String,
 }
 
@@ -32,9 +32,9 @@ pub struct Weight {
   pub id: Option<i32>,
   pub user_id: i32,
   pub weight: f32,
-  #[serde(default = "now_str")]
+  #[serde(default = "now_fmt")]
   pub created_at: String,
-  #[serde(default = "now_str")]
+  #[serde(default = "now_fmt")]
   pub updated_at: String,
 }
 
@@ -62,9 +62,9 @@ pub struct Chart {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub mobile: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub borderColor: Option<String>,
+  pub border_color: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub backgroundColor: Option<String>,
+  pub background_color: Option<String>,
   pub weight: f32,
   pub date: String,
 }
