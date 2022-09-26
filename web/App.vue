@@ -4,8 +4,10 @@
     canvas(id="myChart")
   .data
     .form
-      input(type="number" placeholder="体重")
-      button 提交
+      select(name="users" id="users" @change="onUserChange($event)")
+        option(v-for="user in users" :value="user.id") {{  user.nickname  }}
+      input(type="number" placeholder="体重" v-model="weight")
+      button(@click="submit") 提交
     table(class="data-table")
       tr
         th nickname
@@ -26,6 +28,9 @@ export default {
     return {
       name: "Tonnage",
       userId: null,
+      weight: 0,
+      users: [],
+      charts: [],
       weights: [],
       data: [],
       labels: [],
@@ -33,13 +38,56 @@ export default {
     };
   },
   mounted() {
-    this.getChartData();
+    this.loadData();
   },
   methods: {
+    async submit() {
+      let data = { userId: this.userId, weight: this.weight };
+      const result = await axios.post("/weight", data);
+      console.log(result.data);
+    },
+    async loadData() {
+      let usersResult = await axios.get("/user");
+      let chartResult = await axios.get("/chart");
+      this.charts = chartResult.data.data.list;
+      this.data = chartResult.data.data.list.slice(0, 10);
+      this.users = usersResult.data.data.list;
+      this.userId = this.users.length > 0 ? _.get(_.first(this.users), "id", null) : null;
+      const users = _.groupBy(chartResult.data.data.list, "userId");
+      this.labels = _.map(_.first(Object.values(users)), "date");
+      for (const user of Object.values(users)) {
+        this.datasets.push({
+          label: user[0].nickname,
+          data: _.map(user, "weight"),
+          borderColor: user[0].borderColor || "rgba(255,0,0,1)",
+          backgroundColor: user[0].backgroundColor || "rgba(255,0,0,0.5)",
+          fill: false,
+          lineTension: 0,
+        });
+      }
+      const ctx = document.getElementById("myChart").getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: this.labels,
+          datasets: this.datasets,
+        },
+        options: {
+          responsive: false,
+        },
+      });
+    },
+    onUserChange(event) {
+      console.log(event.target.value);
+      const userId = event.target.value;
+      this.userId = Number(userId);
+    },
     async getChartData() {
-      let result = await axios.get("/chart");
-      this.data = result.data.data.list.slice(0, 10);
-      const users = _.groupBy(result.data.data.list, "userId");
+      let usersResult = await axios.get("/user");
+      let chartResult = await axios.get("/chart");
+      this.data = chartResult.data.data.list.slice(0, 10);
+      this.users = usersResult.data.data.list;
+      const users = _.groupBy(chartResult.data.data.list, "userId");
       for (const user of Object.values(users)) {
         this.labels = _.map(user, "date");
         this.datasets.push({
@@ -103,9 +151,24 @@ export default {
   text-align: left;
   background-color: cadetblue;
   color: white;
-
 .form
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  margin 10px 0;
+select,
+input
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin: 10px;
+  outline: none;
+  border: 1px solid #c6c6c6;
+  min-width: 200px;
+button
+  cursor: pointer;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  background-color: cadetblue;
+  color: white;
+  margin 0 5px;
 </style>
