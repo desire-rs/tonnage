@@ -21,7 +21,7 @@ RUN apk update && apk upgrade --update-cache --available && \
   rm -rf /var/cache/apk/*
 RUN cargo init
 
-FROM rust:alpine3.16 as compiler
+FROM builder as compiler
 WORKDIR /code
 COPY src ./src
 COPY Cargo.toml ./Cargo.toml
@@ -30,8 +30,8 @@ RUN cargo build --release --offline
 
 FROM alpine:3.16.2
 WORKDIR /app
-RUN apk update && apk upgrade && apk add --no-cache sqlite-libs && apk add --no-cache sqlite
+RUN apk update && apk upgrade && apk add --no-cache sqlite
 COPY --from=compiler /code/target/release/tonnage /app/tonnage
 COPY --from=web /code/dist /app/dist
 EXPOSE 12306
-ENTRYPOINT [ "/app/hole", "prod"]
+ENTRYPOINT [ "/app/tonnage", "prod"]
