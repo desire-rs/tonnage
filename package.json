@@ -16,7 +16,10 @@
   "scripts": {
     "dev": "parcel serve web/index.pug --public-url ./assets",
     "build": "parcel build web/index.pug --public-url ./assets",
-    "build2": "parcel build web/index.pug --public-url ./assets"
+    "build2": "parcel build web/index.pug --public-url ./assets",
+    "start": "cargo run",
+    "up": "pm2 start target/release/concepts -- tonnage",
+    "down": "pm2 stop 0 --watch && pm2 delete 0"
   },
   "devDependencies": {
     "@parcel/transformer-pug": "2.7.0",
