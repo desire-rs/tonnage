@@ -22,6 +22,7 @@
 <script>
 import Chart from "chart.js/auto";
 import axios from "axios";
+axios.defaults.baseURL =  "https://desire.ink/tonnage/";
 import _ from "lodash";
 export default {
   data() {
@@ -52,7 +53,8 @@ export default {
       this.charts = chartResult.data.data.list;
       this.data = chartResult.data.data.list.slice(0, 10);
       this.users = usersResult.data.data.list;
-      this.userId = this.users.length > 0 ? _.get(_.first(this.users), "id", null) : null;
+      this.userId =
+        this.users.length > 0 ? _.get(_.first(this.users), "id", null) : null;
       const users = _.groupBy(chartResult.data.data.list, "userId");
       this.labels = _.map(_.first(Object.values(users)), "date");
       for (const user of Object.values(users)) {
