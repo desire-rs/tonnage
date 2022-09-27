@@ -11,7 +11,7 @@ mod service;
 mod types;
 mod utils;
 
-use config::ADDR;
+use config::{ADDR, ENV_NAME};
 use desire::Router;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -29,11 +29,11 @@ async fn main() -> AnyResult<()> {
     .with_max_level(Level::INFO)
     .finish();
   tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-  info!("APP running at {:?}", ADDR);
   let arguments: Vec<String> = env::args().collect();
   let env_name = arguments.get(1).expect("env name must be provided");
   let env_file = format!("env/{}.env", env_name);
   dotenv::from_filename(env_file).ok();
+  info!("APP running at {:?}, ENV:{}", ADDR, ENV_NAME.to_string());
   let mut app = Router::new();
   app.with(middleware::Logger);
   app.get("/", ServeFile::new("dist/index.html".into()));

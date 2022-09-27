@@ -18,7 +18,7 @@ RUN apk update && apk upgrade --update-cache --available && \
   apk add --no-cache libc-dev && \
   apk add --no-cache pkgconfig && \
   apk add --no-cache sqlite-dev
-  # apk add --no-cache sqlite
+# apk add --no-cache sqlite
 RUN cargo init
 
 FROM builder as compiler
@@ -31,12 +31,10 @@ RUN cargo build --release --offline
 FROM alpine:3.16.2
 WORKDIR /app
 RUN apk update && apk upgrade && \
-apk add --no-cache sqlite && \
-apk add --no-cache sqlite-libs && \
-apk add --no-cache sqlite-dev && \
-apk add --no-cache curl
+  apk add --no-cache sqlite
 COPY --from=compiler /code/target/release/tonnage /app/tonnage
 COPY --from=web /code/dist /app/dist
+COPY env/tonnage.env /app/env/tonnage.env
 RUN mkdir db && touch db/tonnage.db
 EXPOSE 12306
-ENTRYPOINT [ "/app/tonnage", "prod"]
+ENTRYPOINT [ "/app/tonnage", "tonnage"]
