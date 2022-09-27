@@ -22,6 +22,7 @@ use controller::user_controller;
 use controller::weight_controller;
 use desire::ServeDir;
 use desire::ServeFile;
+use std::env;
 #[tokio::main]
 async fn main() -> AnyResult<()> {
   let subscriber = FmtSubscriber::builder()
@@ -29,7 +30,10 @@ async fn main() -> AnyResult<()> {
     .finish();
   tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
   info!("APP running at {:?}", ADDR);
-
+  let arguments: Vec<String> = env::args().collect();
+  let env_name = arguments.get(1).expect("env name must be provided");
+  let env_file = format!("env/{}.env", env_name);
+  dotenv::from_filename(env_file).ok();
   let mut app = Router::new();
   app.with(middleware::Logger);
   app.get("/", ServeFile::new("dist/index.html".into()));

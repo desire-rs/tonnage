@@ -766,6 +766,8 @@ dependencies = [
  "async-trait",
  "chrono",
  "desire",
+ "dotenv",
+ "once_cell",
  "rusqlite",
  "serde",
  "serde_json",

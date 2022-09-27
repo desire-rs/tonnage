@@ -19,14 +19,14 @@ pub async fn hello_page(_req: Request) -> ApiPageResult<String> {
 }
 pub async fn db_init(_req: Request) -> ApiResult<String> {
   info!("run init sql: {}", INIT_SQL);
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   conn.execute_batch(INIT_SQL)?;
   Ok(Resp::data("OK".to_string()))
 }
 
 pub async fn db_reset(_req: Request) -> ApiResult<String> {
   info!("run clear sql: {}", CLEAR_SQL);
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   conn.execute_batch(CLEAR_SQL)?;
   Ok(Resp::data("OK".to_string()))
 }
@@ -44,7 +44,7 @@ pub async fn sign_out(_req: Request) -> ApiResult<String> {
 }
 
 pub async fn chart(req: Request) -> ApiPageResult<Chart> {
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let query = req.get_query::<ChartQuery>()?;
   let dt = chrono::Utc::now();
 

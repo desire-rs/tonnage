@@ -5,7 +5,7 @@ use desire::Request;
 use rusqlite::Connection;
 
 pub async fn create(req: Request) -> ApiResult<String> {
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let weight = req.body::<Weight>().await?;
   info!("weight: {:?}", weight);
   let result = conn.execute(
@@ -23,7 +23,7 @@ pub async fn create(req: Request) -> ApiResult<String> {
 pub async fn update(req: Request) -> ApiResult<String> {
   let id = req.get_param::<i32>("id")?;
   let weight = req.body::<Weight>().await?;
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let result = conn.execute(
     "update weight set weights=?1,updatedAt=?2 where id = ?3",
     (&weight.weight, &weight.updated_at, &id),
@@ -33,14 +33,14 @@ pub async fn update(req: Request) -> ApiResult<String> {
 }
 pub async fn remove(req: Request) -> ApiResult<String> {
   let id = req.get_param::<i32>("id")?;
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let result = conn.execute("DELETE FROM weights where id = ?1", [&id])?;
   info!("result: {}", result);
   Ok(Resp::data("OK".to_string()))
 }
 
 pub async fn get_all(_req: Request) -> ApiPageResult<Weight> {
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let mut stmt = conn.prepare("SELECT id, userId,weight,createdAt, updatedAt FROM weights")?;
   let user_iter = stmt.query_map([], |row| {
     Ok(Weight {
@@ -61,7 +61,7 @@ pub async fn get_all(_req: Request) -> ApiPageResult<Weight> {
 }
 pub async fn get_by_id(req: Request) -> ApiOptionResult<Weight> {
   let id = req.get_param::<i32>("id")?;
-  let conn = Connection::open(DATABASE_URI)?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
   let mut stmt = conn.prepare("SELECT id, userId weight,createdAt, updatedAt FROM weights WHERE id = ?")?;
 
   let weight = stmt.query_row([&id], |row| {
