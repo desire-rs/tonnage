@@ -17,8 +17,8 @@ RUN apk update && apk upgrade --update-cache --available && \
   apk add --no-cache libressl-dev && \
   apk add --no-cache libc-dev && \
   apk add --no-cache pkgconfig && \
-  apk add --no-cache sqlite  && \
-  rm -rf /var/cache/apk/*
+  apk add --no-cache sqlite-dev && \
+  apk add --no-cache sqlite
 RUN cargo init
 
 FROM builder as compiler
