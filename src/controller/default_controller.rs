@@ -56,8 +56,12 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
     .to_string();
   let query = query.unwrap_or(ChartQuery::new(date_start, date_end));
 
-  info!("query {:?}", query);
-  let sql = r#"
+  let mut and_where = "1 = 1".to_string();
+  if let Some(user_id) = query.user_id {
+    and_where = format!("weights.userId = {}", user_id);
+  }
+  let sql = format!(
+    r#"
   SELECT
     userId,
     users.nickname,
@@ -70,17 +74,37 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
   FROM
     weights
     INNER JOIN users ON weights.userId = users.id
-  WHERE
-    weights.createdAt >= ?
-    AND weights.createdAt <= ?
-  GROUP BY
-    userId,
-    date
-"#;
+  WHERE weights.createdAt >= '{}'
+    AND weights.createdAt <= '{}'
+    AND {}
+  GROUP BY userId,date"#,
+    &query.date_start,
+    &query.date_end,
+    and_where.clone()
+  );
 
-  let mut stmt = conn.prepare(sql)?;
-  let chart_iter = stmt.query_map([&query.date_start, &query.date_end], |row| {
-    Ok(Chart {
+  let count_sql = format!(
+    r#"
+    SELECT
+      COUNT(1) total
+    FROM weights
+    WHERE weights.createdAt >= '{}'
+    AND weights.createdAt <= '{}'
+    AND {}
+  "#,
+    &query.date_start, &query.date_end, and_where
+  );
+
+  info!("sql {}", sql);
+  let total: u64 = conn
+    .query_row(count_sql.as_str(), [], |row| row.get(0))
+    .unwrap();
+  info!("total {}", total);
+  let mut stmt = conn.prepare(sql.as_str())?;
+  let mut rows = stmt.raw_query();
+  let mut list: Vec<Chart> = Vec::new();
+  while let Some(row) = rows.next()? {
+    let chart = Chart {
       user_id: row.get(0)?,
       nickname: row.get(1)?,
       email: row.get(2)?,
@@ -89,13 +113,9 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
       background_color: row.get(5)?,
       weight: row.get(6)?,
       date: row.get(7)?,
-    })
-  })?;
-  let mut list: Vec<Chart> = Vec::new();
-  for chart in chart_iter {
-    list.push(chart?);
+    };
+    list.push(chart);
   }
-  let len = list.len() as u64;
-  let result = PageData::new(list, len);
+  let result = PageData::new(list, total);
   Ok(Resp::data(result))
 }

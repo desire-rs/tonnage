@@ -1,4 +1,4 @@
-use crate::utils::{now_str, now_fmt};
+use crate::utils::now_fmt;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
