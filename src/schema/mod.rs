@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct User {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub id: Option<i32>,
+  pub id: Option<u32>,
   pub username: String,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub nickname: Option<String>,
@@ -29,8 +29,8 @@ pub struct User {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Weight {
-  pub id: Option<i32>,
-  pub user_id: i32,
+  pub id: Option<u32>,
+  pub user_id: u32,
   pub weight: f32,
   #[serde(default = "now_fmt")]
   pub created_at: String,
@@ -46,15 +46,17 @@ fn default_password() -> String {
 #[serde(rename_all = "camelCase")]
 pub struct ChartQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub user_id: Option<i32>,
+  pub user_id: Option<u32>,
   pub date_start: String,
   pub date_end: String,
+  pub limit: u32,
+  pub page: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Chart {
-  pub user_id: i32,
+  pub user_id: u32,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub nickname: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -75,6 +77,11 @@ impl ChartQuery {
       user_id: None,
       date_start,
       date_end,
+      limit: 20,
+      page: 1,
     }
+  }
+  pub fn offset(&self) -> u32 {
+    (self.page - 1) * self.limit
   }
 }

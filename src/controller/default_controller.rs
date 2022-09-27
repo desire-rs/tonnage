@@ -77,10 +77,14 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
   WHERE weights.createdAt >= '{}'
     AND weights.createdAt <= '{}'
     AND {}
-  GROUP BY userId,date"#,
+  GROUP BY userId,date
+  LIMIT {} OFFSET {}
+  "#,
     &query.date_start,
     &query.date_end,
-    and_where.clone()
+    and_where.clone(),
+    &query.limit,
+    &query.offset()
   );
 
   let count_sql = format!(
