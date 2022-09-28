@@ -32,9 +32,9 @@ FROM alpine:3.16.2
 WORKDIR /app
 RUN apk update && apk upgrade && \
   apk add --no-cache sqlite
-COPY --from=compiler /code/target/release/tonnage /app/tonnage
+COPY --from=compiler /code/target /app/target
 COPY --from=web /code/dist /app/dist
 COPY env/tonnage.env /app/env/tonnage.env
-RUN mkdir db && touch db/tonnage.db
+
 EXPOSE 12306
-ENTRYPOINT [ "/app/tonnage", "tonnage"]
+ENTRYPOINT [ "target/release/tonnage", "tonnage"]
