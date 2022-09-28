@@ -22,7 +22,7 @@
 <script>
 import Chart from "chart.js/auto";
 import axios from "axios";
-axios.defaults.baseURL =  "https://desire.ink/tonnage/";
+axios.defaults.baseURL = window.location.href;
 import _ from "lodash";
 export default {
   data() {
