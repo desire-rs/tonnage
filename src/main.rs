@@ -49,6 +49,7 @@ async fn main() -> AnyResult<()> {
   app.post("/signin", default_controller::signin);
   app.post("/signup", default_controller::signup);
   app.post("/signout", default_controller::signout);
+  app.get("/token_data", default_controller::token_data);
 
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);

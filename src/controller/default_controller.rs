@@ -1,4 +1,4 @@
-use crate::config::{CLEAR_SQL, DATABASE_URI, INIT_SQL};
+use crate::config::{CLEAR_SQL, DATABASE_URI, INIT_SQL, JWT_SECRET};
 use crate::schema::{Chart, ChartQuery, Claims, SignIn, TokenData, TokenInfo, User};
 use crate::types::{ApiOptionResult, ApiPageResult, ApiResult, PageData, Resp};
 use chrono::Datelike;
@@ -60,7 +60,7 @@ pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
   let token = encode(
     &Header::default(),
     &Claims::new(v_user.id.unwrap()),
-    &EncodingKey::from_secret("tonnage".as_ref()),
+    &EncodingKey::from_secret(JWT_SECRET.as_bytes()),
   )?;
   let info = TokenInfo::new(token);
   Ok(Resp::data(info))
@@ -68,6 +68,17 @@ pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
 
 pub async fn signout(_req: Request) -> ApiResult<String> {
   Ok(Resp::data("sign_out".to_string()))
+}
+
+pub async fn token_data(req: Request) -> ApiResult<TokenData> {
+  let token_data = req
+    .inner
+    .extensions()
+    .get::<TokenData>()
+    .ok_or_else(|| anyhow::anyhow!("token is none"))
+    .map(|x| x.clone())?;
+  info!("{:?}", token_data);
+  Ok(Resp::data(token_data))
 }
 
 pub async fn chart(req: Request) -> ApiPageResult<Chart> {

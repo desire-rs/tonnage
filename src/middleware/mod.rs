@@ -1,4 +1,4 @@
-use crate::config::EXEMPT_ROUTES;
+use crate::config::{EXEMPT_ROUTES, JWT_SECRET};
 use crate::schema::{Claims, TokenData};
 use desire::http;
 use desire::Error;
@@ -45,7 +45,7 @@ impl Middleware for Auth {
         let token = token.replace("Bearer ", "");
         let token = decode::<Claims>(
           token.as_str(),
-          &DecodingKey::from_secret("secret".as_bytes()),
+          &DecodingKey::from_secret(JWT_SECRET.as_bytes()),
           &Validation::default(),
         )
         .map_err(|e| Error::Message { msg: e.to_string() })?;
