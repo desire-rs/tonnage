@@ -20,6 +20,7 @@ CREATE TABLE "users" (
   "email" TEXT,
   "mobile" TEXT,
   "meta" TEXT,
+  "salt" TEXT,
   "subscription" INTEGER,
   "createdAt" DATE NOT NULL,
   "updatedAt" DATE

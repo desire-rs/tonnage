@@ -8,14 +8,16 @@ pub struct User {
   pub username: String,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub nickname: Option<String>,
-  #[serde(default = "default_password")]
-  pub password: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub password: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub birthday: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub gender: Option<String>,
   pub email: String,
   pub mobile: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub salt: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub meta: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -36,10 +38,6 @@ pub struct Weight {
   pub created_at: String,
   #[serde(default = "now_fmt")]
   pub updated_at: String,
-}
-
-fn default_password() -> String {
-  "123456".to_owned()
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -130,5 +128,5 @@ pub struct SignIn {
   pub username: String,
   pub password: String,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub vcode: Option<String>,
+  pub salt: Option<String>,
 }

@@ -1,6 +1,8 @@
 use crate::config::{CLEAR_SQL, DATABASE_URI, INIT_SQL, JWT_SECRET};
+use crate::error::Error;
 use crate::schema::{Chart, ChartQuery, Claims, SignIn, TokenData, TokenInfo, User};
 use crate::types::{ApiOptionResult, ApiPageResult, ApiResult, PageData, Resp};
+use crate::utils::sha_256;
 use chrono::Datelike;
 use desire::{IntoResponse, Request};
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -48,15 +50,23 @@ pub async fn signup(req: Request) -> ApiResult<TokenData> {
 pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
   let user = req.body::<SignIn>().await?;
   let conn = Connection::open(DATABASE_URI.as_str())?;
-  let mut stmt = conn.prepare("SELECT id, username,password FROM users WHERE username = ?")?;
+  let mut stmt = conn.prepare("SELECT id, username,password,salt FROM users WHERE username = ?")?;
   let v_user = stmt.query_row([&user.username], |row| {
     Ok(SignIn {
       id: row.get(0)?,
       username: row.get(1)?,
       password: row.get(2)?,
-      vcode: None,
+      salt: row.get(3)?,
     })
   })?;
+  let password = sha_256(&user.password, &v_user.salt.unwrap_or("salt".to_string()));
+
+  info!("password {}", password);
+  if password != v_user.password {
+    return Err(Error::AnyhowError(anyhow::anyhow!(
+      "password is not correct"
+    )));
+  }
   let token = encode(
     &Header::default(),
     &Claims::new(v_user.id.unwrap()),
