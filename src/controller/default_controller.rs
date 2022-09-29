@@ -1,10 +1,10 @@
 use crate::config::{CLEAR_SQL, DATABASE_URI, INIT_SQL};
-use crate::schema::{Chart, ChartQuery};
+use crate::schema::{Chart, ChartQuery, Claims, SignIn, TokenData, TokenInfo, User};
 use crate::types::{ApiOptionResult, ApiPageResult, ApiResult, PageData, Resp};
 use chrono::Datelike;
 use desire::{IntoResponse, Request};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use rusqlite::Connection;
-
 pub async fn hello(_req: Request) -> impl IntoResponse {
   "Hello World!"
 }
@@ -31,15 +31,42 @@ pub async fn db_reset(_req: Request) -> ApiResult<String> {
   Ok(Resp::data("OK".to_string()))
 }
 
-pub async fn sign_up(_req: Request) -> ApiResult<String> {
-  Ok(Resp::data("sign_up".to_string()))
+pub async fn signup(req: Request) -> ApiResult<TokenData> {
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let user = req.body::<User>().await?;
+  info!("user: {:?}", user);
+  let result = conn.execute(
+    "INSERT INTO users (username,nickname,password,birthday,gender,email,mobile,meta,subscription,createdAt, updatedAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+    (&user.username, &user.nickname, &user.password, &user.birthday, &user.gender, &user.email, &user.mobile, &user.meta, &user.subscription, &user.created_at, &user.updated_at),
+  )?;
+  info!("result: {:?}", result);
+  let mut stmt = conn.prepare("SELECT id, username FROM users WHERE username = ?")?;
+  let user = stmt.query_row([&user.username], |row| Ok(TokenData { uid: row.get(0)? }))?;
+  Ok(Resp::data(user))
 }
 
-pub async fn sign_in(_req: Request) -> ApiResult<String> {
-  Ok(Resp::data("sign_in".to_string()))
+pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
+  let user = req.body::<SignIn>().await?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let mut stmt = conn.prepare("SELECT id, username,password FROM users WHERE username = ?")?;
+  let v_user = stmt.query_row([&user.username], |row| {
+    Ok(SignIn {
+      id: row.get(0)?,
+      username: row.get(1)?,
+      password: row.get(2)?,
+      vcode: None,
+    })
+  })?;
+  let token = encode(
+    &Header::default(),
+    &Claims::new(v_user.id.unwrap()),
+    &EncodingKey::from_secret("tonnage".as_ref()),
+  )?;
+  let info = TokenInfo::new(token);
+  Ok(Resp::data(info))
 }
 
-pub async fn sign_out(_req: Request) -> ApiResult<String> {
+pub async fn signout(_req: Request) -> ApiResult<String> {
   Ok(Resp::data("sign_out".to_string()))
 }
 

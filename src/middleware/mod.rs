@@ -1,7 +1,14 @@
+use crate::config::EXEMPT_ROUTES;
+use crate::schema::{Claims, TokenData};
+use desire::http;
+use desire::Error;
+use desire::IntoResponse;
 use desire::Middleware;
 use desire::Request;
 use desire::Result;
+use jsonwebtoken::{decode, DecodingKey, Validation};
 use std::time::Instant;
+
 pub struct Logger;
 
 #[async_trait::async_trait]
@@ -19,5 +26,40 @@ impl Middleware for Logger {
       start.elapsed().as_millis()
     );
     Ok(res)
+  }
+}
+
+pub struct Auth;
+
+#[async_trait::async_trait]
+impl Middleware for Auth {
+  async fn handle(&self, mut req: Request, next: desire::Next<'_>) -> Result {
+    let headers = req.inner.headers();
+    let uri = req.uri().to_string();
+    let path = req.path();
+    if EXEMPT_ROUTES.contains(&path) {
+      next.run(req).await
+    } else {
+      if let Some(token) = headers.get(http::header::AUTHORIZATION) {
+        let token = String::from_utf8_lossy(token.as_bytes());
+        let token = token.replace("Bearer ", "");
+        let token = decode::<Claims>(
+          token.as_str(),
+          &DecodingKey::from_secret("secret".as_bytes()),
+          &Validation::default(),
+        )
+        .map_err(|e| Error::Message { msg: e.to_string() })?;
+        let payload: TokenData = TokenData {
+          uid: token.claims.sub,
+        };
+        req.inner.extensions_mut().insert(payload);
+        next.run(req).await
+      } else {
+        Error::Message {
+          msg: format!("uri {} auth required", uri),
+        }
+        .into_response()
+      }
+    }
   }
 }

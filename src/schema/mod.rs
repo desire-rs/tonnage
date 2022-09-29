@@ -85,3 +85,50 @@ impl ChartQuery {
     (self.page - 1) * self.limit
   }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+  pub sub: u32,
+  pub company: String,
+  pub exp: usize,
+}
+
+impl Claims {
+  pub fn new(sub: u32) -> Self {
+    Self {
+      sub,
+      company: String::from("Tonnage"),
+      exp: 86400 * 30 * 1000,
+    }
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct TokenData {
+  pub uid: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TokenInfo {
+  token: String,
+  exp: usize,
+}
+
+impl TokenInfo {
+  pub fn new(token: String) -> Self {
+    Self {
+      token,
+      exp: 86400 * 30 * 1000,
+    }
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SignIn {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub id: Option<u32>,
+  pub username: String,
+  pub password: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub vcode: Option<String>,
+}

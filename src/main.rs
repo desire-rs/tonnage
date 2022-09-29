@@ -35,6 +35,7 @@ async fn main() -> AnyResult<()> {
   dotenv::from_filename(env_file).ok();
   info!("APP running at {:?}, ENV:{}", ADDR, ENV_NAME.to_string());
   let mut app = Router::new();
+  app.with(middleware::Auth);
   app.with(middleware::Logger);
   app.get("/", ServeFile::new("dist/index.html".into()));
   app.get("/assets/:file", ServeDir::new("dist".into()));
@@ -45,9 +46,9 @@ async fn main() -> AnyResult<()> {
   app.get("/db_init", default_controller::db_init);
   app.get("/db_reset", default_controller::db_reset);
 
-  app.post("/sign_in", default_controller::sign_in);
-  app.post("/sign_up", default_controller::sign_up);
-  app.post("/sign_out", default_controller::sign_out);
+  app.post("/signin", default_controller::signin);
+  app.post("/signup", default_controller::signup);
+  app.post("/signout", default_controller::signout);
 
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);

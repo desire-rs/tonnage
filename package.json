@@ -11,10 +11,12 @@
     "parcel-namer-rewrite": "^2.0.0-rc.2",
     "stylus": "^0.59.0",
     "vue": "^3.2.39",
-    "vue-chartjs": "^4.1.1"
+    "vue-chartjs": "^4.1.1",
+    "vue-router": "4"
   },
   "scripts": {
     "dev": "parcel serve web/index.pug --public-url ./assets",
+    "dev2": "parcel serve web/index.pug",
     "build": "parcel build web/index.pug --public-url ./assets",
     "build2": "parcel build web/index.pug --public-url ./assets",
     "start": "cargo run",
