@@ -37,7 +37,13 @@ impl Middleware for Auth {
     let headers = req.inner.headers();
     let uri = req.uri().to_string();
     let path = req.path();
-    if EXEMPT_ROUTES.contains(&path) {
+    let mut skip = false;
+    for value in EXEMPT_ROUTES {
+      if path.starts_with(value) {
+        skip = true;
+      }
+    }
+    if skip {
       next.run(req).await
     } else {
       if let Some(token) = headers.get(http::header::AUTHORIZATION) {

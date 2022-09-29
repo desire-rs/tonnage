@@ -10,9 +10,16 @@ export default {
       name: "Tonnage",
     };
   },
-  mounted() {},
+  mounted() {
+    this.checkAuth();
+  },
   methods: {
-    async submit() {},
+    async checkAuth() {
+      let token = window.localStorage.getItem("token");
+      if (!token) {
+        this.$router.push("/signin");
+      }
+    },
   },
 };
 </script>
