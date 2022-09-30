@@ -29,17 +29,22 @@ CREATE TABLE "users" (
 
 CREATE INDEX "users_email"
 ON "users" (
-  "email" ASC
+  "email"
+);
+
+CREATE INDEX "users_mobile"
+ON "users" (
+  "mobile"
 );
 
 CREATE INDEX "users_nickname"
 ON "users" (
-  "nickname" ASC
+  "nickname"
 );
 
 CREATE UNIQUE INDEX "users_username"
 ON "users" (
-  "username" ASC
+  "username"
 );
 
 CREATE TABLE "weights" (
@@ -60,22 +65,38 @@ CREATE TABLE "userProps" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   "userId" INTEGER NOT NULL,
   "name" TEXT,
-  "valaue" TEXT,
+  "value" TEXT,
   "createdAt" DATE NOT NULL,
   "updatedAt" DATE
 );
 
-CREATE INDEX "userprops_userId"
+CREATE INDEX "user_props_userId_name"
 ON "userProps" (
-  "userId"
+  "userId",
+  "name"
 );
 
+CREATE TABLE "tags" (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "userId" INTEGER NOT NULL,
+  "name" TEXT,
+  "createdAt" DATE NOT NULL,
+  "updatedAt" DATE
+);
+
+CREATE INDEX "user_tags_userId_name"
+ON "tags" (
+  "userId",
+  "name"
+);
 COMMIT;
 "#;
 
 pub const CLEAR_SQL: &'static str = r#"
 BEGIN;
+DROP TABLE tags;
 DROP TABLE users;
 DROP TABLE weights;
+DROP TABLE userProps;
 COMMIT;
 "#;
