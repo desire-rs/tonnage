@@ -8,10 +8,8 @@
     "axios": "^0.27.2",
     "chart.js": "^3.9.1",
     "lodash": "^4.17.21",
-    "parcel-namer-rewrite": "^2.0.0-rc.2",
     "stylus": "^0.59.0",
     "vue": "^3.2.39",
-    "vue-chartjs": "^4.1.1",
     "vue-router": "4"
   },
   "scripts": {
@@ -30,10 +28,6 @@
     "buffer": "^6.0.3",
     "parcel": "^2.7.0",
     "process": "^0.11.10"
-  },
-  "parcel-namer-rewrite": {
-    "chain": "@parcel/namer-default",
-    "rules": {}
   },
   "targets": {
     "main": false
