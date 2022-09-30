@@ -66,6 +66,8 @@ async fn main() -> AnyResult<()> {
   app.delete("/weight/:id", weight_controller::remove);
 
   app.post("/tag", tag_controller::create);
+  app.delete("/tag/:id", tag_controller::remove);
+  app.put("/tag/:id", tag_controller::update);
 
   // chart
   app.get("/chart", default_controller::chart);

@@ -28,3 +28,35 @@ pub async fn create(req: Request) -> ApiResult<Tag> {
   )?;
   Ok(Resp::data(tag))
 }
+
+pub async fn update(req: Request) -> ApiResult<Tag> {
+  let id = req.get_param::<u32>("id")?;
+  let tag = req.body::<Tag>().await?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let sql = "UPDATE tags SET name = ?, updatedAt = ? WHERE id = ?";
+  let result = conn.execute(sql, params![&tag.name, &tag.updated_at, id])?;
+
+  info!("result: {:?}", result);
+  let tag = conn.query_row(
+    "SELECT id,userId,name,createdAt,updatedAt from tags where id = ?",
+    params![id],
+    |row| {
+      Ok(Tag {
+        id: row.get(0)?,
+        user_id: row.get(1)?,
+        name: row.get(2)?,
+        created_at: row.get(3)?,
+        updated_at: row.get(4)?,
+      })
+    },
+  )?;
+  Ok(Resp::data(tag))
+}
+
+pub async fn remove(req: Request) -> ApiResult<String> {
+  let id = req.get_param::<u32>("id")?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let result = conn.execute("DELETE FROM tags where id = ?", [&id])?;
+  info!("result: {}", result);
+  Ok(Resp::data("OK".to_string()))
+}
