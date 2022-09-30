@@ -26,6 +26,24 @@ pub async fn get_all(_req: Request) -> ApiPageResult<Tag> {
   Ok(Resp::data(result))
 }
 
+pub async fn get_by_id(req: Request) -> ApiResult<Tag> {
+  let id = req.get_param::<i32>("id")?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let mut stmt =
+    conn.prepare("SELECT id, userId, name,createdAt, updatedAt FROM tags WHERE id = ?")?;
+
+  let tag = stmt.query_row([&id], |row| {
+    Ok(Tag {
+      id: row.get(0)?,
+      user_id: row.get(1)?,
+      name: row.get(2)?,
+      created_at: row.get(3)?,
+      updated_at: row.get(4)?,
+    })
+  })?;
+  Ok(Resp::data(tag))
+}
+
 pub async fn create(req: Request) -> ApiResult<Tag> {
   let tag = req.body::<Tag>().await?;
   let conn = Connection::open(DATABASE_URI.as_str())?;

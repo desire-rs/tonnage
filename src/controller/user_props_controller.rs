@@ -28,6 +28,25 @@ pub async fn get_all(_req: Request) -> ApiPageResult<UserProps> {
   Ok(Resp::data(result))
 }
 
+pub async fn get_by_id(req: Request) -> ApiResult<UserProps> {
+  let id = req.get_param::<i32>("id")?;
+  let conn = Connection::open(DATABASE_URI.as_str())?;
+  let mut stmt = conn
+    .prepare("SELECT id, userId, name, value, createdAt, updatedAt FROM userProps WHERE id = ?")?;
+
+  let user_props = stmt.query_row([&id], |row| {
+    Ok(UserProps {
+      id: row.get(0)?,
+      user_id: row.get(1)?,
+      name: row.get(2)?,
+      value: row.get(3)?,
+      created_at: row.get(4)?,
+      updated_at: row.get(5)?,
+    })
+  })?;
+  Ok(Resp::data(user_props))
+}
+
 pub async fn create(req: Request) -> ApiResult<UserProps> {
   let user_props = req.body::<UserProps>().await?;
   let conn = Connection::open(DATABASE_URI.as_str())?;

@@ -67,11 +67,13 @@ async fn main() -> AnyResult<()> {
   app.delete("/weight/:id", weight_controller::remove);
 
   app.get("/tag", tag_controller::get_all);
+  app.get("/tag/:id", tag_controller::get_by_id);
   app.post("/tag", tag_controller::create);
   app.delete("/tag/:id", tag_controller::remove);
   app.put("/tag/:id", tag_controller::update);
 
   app.get("/userProps", user_props_controller::get_all);
+  app.get("/userProps/:id", user_props_controller::get_by_id);
   app.post("/userProps", user_props_controller::create);
   app.delete("/userProps/:id", user_props_controller::remove);
   app.put("/userProps/:id", user_props_controller::update);
