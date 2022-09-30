@@ -14,13 +14,14 @@ CREATE TABLE "users" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "nickname" TEXT,
+  "salt" TEXT,
+  "avatar" TEXT,
   "password" TEXT NOT NULL,
   "birthday" TEXT,
   "gender" TEXT,
   "email" TEXT,
   "mobile" TEXT,
   "meta" TEXT,
-  "salt" TEXT,
   "subscription" INTEGER,
   "createdAt" DATE NOT NULL,
   "updatedAt" DATE
@@ -36,7 +37,7 @@ ON "users" (
   "nickname" ASC
 );
 
-CREATE INDEX "users_username"
+CREATE UNIQUE INDEX "users_username"
 ON "users" (
   "username" ASC
 );
@@ -49,8 +50,23 @@ CREATE TABLE "weights" (
   "updatedAt" DATE
 );
 
+
 CREATE INDEX "weights_userId"
 ON "weights" (
+  "userId"
+);
+
+CREATE TABLE "userProps" (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "userId" INTEGER NOT NULL,
+  "name" TEXT,
+  "valaue" TEXT,
+  "createdAt" DATE NOT NULL,
+  "updatedAt" DATE
+);
+
+CREATE INDEX "userprops_userId"
+ON "userProps" (
   "userId"
 );
 
