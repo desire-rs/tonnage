@@ -130,3 +130,31 @@ pub struct SignIn {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub salt: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Tag {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub id: Option<u32>,
+  pub user_id: u32,
+  pub name: String,
+  #[serde(default = "now_fmt")]
+  pub created_at: String,
+  #[serde(default = "now_fmt")]
+  pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserProps {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub id: Option<u32>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub user_id: Option<u32>,
+  pub name: String,
+  pub value: serde_json::Value,
+  #[serde(default = "now_fmt")]
+  pub created_at: String,
+  #[serde(default = "now_fmt")]
+  pub updated_at: String,
+}

@@ -27,12 +27,12 @@ CREATE TABLE "users" (
   "updatedAt" DATE
 );
 
-CREATE INDEX "users_email"
+CREATE UNIQUE INDEX "users_email"
 ON "users" (
   "email"
 );
 
-CREATE INDEX "users_mobile"
+CREATE UNIQUE INDEX "users_mobile"
 ON "users" (
   "mobile"
 );
@@ -70,7 +70,7 @@ CREATE TABLE "userProps" (
   "updatedAt" DATE
 );
 
-CREATE INDEX "user_props_userId_name"
+CREATE UNIQUE INDEX "user_props_userId_name"
 ON "userProps" (
   "userId",
   "name"
@@ -84,7 +84,7 @@ CREATE TABLE "tags" (
   "updatedAt" DATE
 );
 
-CREATE INDEX "user_tags_userId_name"
+CREATE UNIQUE INDEX "user_tags_userId_name"
 ON "tags" (
   "userId",
   "name"

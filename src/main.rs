@@ -18,6 +18,7 @@ use tracing_subscriber::FmtSubscriber;
 use types::AnyResult;
 
 use controller::default_controller;
+use controller::tag_controller;
 use controller::user_controller;
 use controller::weight_controller;
 use desire::ServeDir;
@@ -63,6 +64,8 @@ async fn main() -> AnyResult<()> {
   app.put("/weight/:id", weight_controller::update);
   app.get("/weight/:id", weight_controller::get_by_id);
   app.delete("/weight/:id", weight_controller::remove);
+
+  app.post("/tag", tag_controller::create);
 
   // chart
   app.get("/chart", default_controller::chart);
