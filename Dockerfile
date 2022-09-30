@@ -31,8 +31,10 @@ RUN cargo build --release --offline
 FROM alpine:3.16.2
 WORKDIR /app
 RUN apk update && apk upgrade && \
-  apk add --no-cache sqlite
-COPY --from=compiler /code/target /app/target
+  apk add --no-cache sqlite && \
+  apk add --no-cache sqlite-dev && \
+  apk add --no-cache sqlite-libs
+COPY --from=compiler /code/target/release/tonnage /app/target/release/tonnage
 COPY --from=web /code/dist /app/dist
 COPY env/tonnage.env /app/env/tonnage.env
 
