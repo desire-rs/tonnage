@@ -20,6 +20,7 @@ use types::AnyResult;
 use controller::default_controller;
 use controller::tag_controller;
 use controller::user_controller;
+use controller::user_props_controller;
 use controller::weight_controller;
 use desire::ServeDir;
 use desire::ServeFile;
@@ -65,9 +66,15 @@ async fn main() -> AnyResult<()> {
   app.get("/weight/:id", weight_controller::get_by_id);
   app.delete("/weight/:id", weight_controller::remove);
 
+  app.get("/tag", tag_controller::get_all);
   app.post("/tag", tag_controller::create);
   app.delete("/tag/:id", tag_controller::remove);
   app.put("/tag/:id", tag_controller::update);
+
+  app.get("/userProps", user_props_controller::get_all);
+  app.post("/userProps", user_props_controller::create);
+  app.delete("/userProps/:id", user_props_controller::remove);
+  app.put("/userProps/:id", user_props_controller::update);
 
   // chart
   app.get("/chart", default_controller::chart);
