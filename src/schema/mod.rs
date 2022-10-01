@@ -39,6 +39,19 @@ pub struct Weight {
   #[serde(default = "now_fmt")]
   pub updated_at: String,
 }
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserQuery {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub uid: Option<u32>,
+  pub username: Option<String>,
+  pub email: Option<String>,
+  pub mobile: Option<String>,
+  pub date_start: Option<String>,
+  pub date_end: Option<String>,
+  pub limit: u32,
+  pub page: u32,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -50,6 +63,7 @@ pub struct ChartQuery {
   pub limit: u32,
   pub page: u32,
 }
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -1,5 +1,5 @@
 use crate::config::DATABASE_URI;
-use crate::schema::{User, Weight};
+use crate::schema::{User, UserQuery, Weight};
 use crate::types::{ApiOptionResult, ApiPageResult, ApiResult, PageData, Resp};
 use crate::utils::{gen_salt, sha_256};
 use desire::Request;
@@ -41,9 +41,31 @@ pub async fn remove(req: Request) -> ApiResult<String> {
   Ok(Resp::data("OK".to_string()))
 }
 
-pub async fn get_all(_req: Request) -> ApiPageResult<User> {
+pub async fn get_all(req: Request) -> ApiPageResult<User> {
+  let query = req.get_query::<UserQuery>()?;
+  let mut wheres = " 1 = 1".to_string();
+  let mut limit = 20;
+  let mut page = 1;
+  if let Some(query) = query {
+    limit = query.limit;
+    page = query.page;
+    if let Some(uid) = query.uid {
+      wheres = format!("{} AND id = {}", wheres, uid);
+    }
+    if let Some(username) = query.username {
+      wheres = format!("{} AND username = {}", wheres, username);
+    }
+    if let Some(email) = query.email {
+      wheres = format!("{} AND email = {}", wheres, email);
+    }
+  }
+  let offset = (page - 1) * limit;
   let conn = Connection::open(DATABASE_URI.as_str())?;
-  let mut stmt = conn.prepare("SELECT id, username,nickname,salt,birthday,gender,email,mobile,meta,subscription,createdAt, updatedAt FROM users")?;
+  let sql = format!("SELECT id, username,nickname,salt,birthday,gender,email,mobile,meta,subscription,createdAt, updatedAt FROM users WHERE {} LIMIT {} OFFSET {}", wheres, limit, offset);
+  let count_sql = format!("SELECT COUNT(1) FROM users WHERE {}", wheres);
+  info!("sql: {}", sql);
+  info!("count_sql: {}", count_sql);
+  let mut stmt = conn.prepare(&sql)?;
   let user_iter = stmt.query_map([], |row| {
     Ok(User {
       id: row.get(0)?,
@@ -61,12 +83,15 @@ pub async fn get_all(_req: Request) -> ApiPageResult<User> {
       updated_at: row.get(11)?,
     })
   })?;
+
+  let total: u64 = conn
+    .query_row(count_sql.as_str(), [], |row| row.get(0))
+    .unwrap();
   let mut list: Vec<User> = Vec::new();
   for user in user_iter {
     list.push(user?);
   }
-  let len = list.len() as u64;
-  let result = PageData::new(list, len);
+  let result = PageData::new(list, total);
   Ok(Resp::data(result))
 }
 pub async fn get_by_id(req: Request) -> ApiOptionResult<User> {
