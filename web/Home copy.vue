@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       name: "Tonnage",
-      userId: null,
+      user_id: null,
       weight: 0,
       users: [],
       charts: [],
@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     async submit() {
-      let data = { userId: this.userId, weight: this.weight };
+      let data = { user_id: this.user_id, weight: this.weight };
       const result = await axios.post("/weight", data);
       console.log(result.data);
     },
@@ -53,9 +53,9 @@ export default {
       this.charts = chartResult.data.data.list;
       this.data = chartResult.data.data.list.slice(0, 10);
       this.users = usersResult.data.data.list;
-      this.userId =
+      this.user_id =
         this.users.length > 0 ? _.get(_.first(this.users), "id", null) : null;
-      const users = _.groupBy(chartResult.data.data.list, "userId");
+      const users = _.groupBy(chartResult.data.data.list, "user_id");
       this.labels = _.map(_.first(Object.values(users)), "date");
       for (const user of Object.values(users)) {
         this.datasets.push({
@@ -81,15 +81,15 @@ export default {
     },
     onUserChange(event) {
       console.log(event.target.value);
-      const userId = event.target.value;
-      this.userId = Number(userId);
+      const user_id = event.target.value;
+      this.user_id = Number(user_id);
     },
     async getChartData() {
       let usersResult = await axios.get("/user");
       let chartResult = await axios.get("/chart");
       this.data = chartResult.data.data.list.slice(0, 10);
       this.users = usersResult.data.data.list;
-      const users = _.groupBy(chartResult.data.data.list, "userId");
+      const users = _.groupBy(chartResult.data.data.list, "user_id");
       for (const user of Object.values(users)) {
         this.labels = _.map(user, "date");
         this.datasets.push({

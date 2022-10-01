@@ -11,8 +11,8 @@ pub enum Error {
   JsonError(#[from] serde_json::Error),
   #[error("io error")]
   IoError(#[from] std::io::Error),
-  #[error("rusqlite::Error {0:?}")]
-  SqliteError(#[from] rusqlite::Error),
+  #[error("sqlx::Error {0:?}")]
+  SqlxError(#[from] sqlx::Error),
   #[error("jsonwebtoken::errors::Error {0:?}")]
   JwtError(#[from] jsonwebtoken::errors::Error),
 }

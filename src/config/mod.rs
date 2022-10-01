@@ -21,10 +21,8 @@ CREATE TABLE "users" (
   "gender" TEXT,
   "email" TEXT,
   "mobile" TEXT,
-  "meta" TEXT,
-  "subscription" INTEGER,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
 CREATE UNIQUE INDEX "users_email"
@@ -49,54 +47,54 @@ ON "users" (
 
 CREATE TABLE "weights" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "userId" INTEGER NOT NULL,
+  "user_id" INTEGER NOT NULL,
   "weight" REAL,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
 
-CREATE INDEX "weights_userId"
+CREATE INDEX "weights_user_id"
 ON "weights" (
-  "userId"
+  "user_id"
 );
 
-CREATE TABLE "userProps" (
+CREATE TABLE "props" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "userId" INTEGER NOT NULL,
+  "user_id" INTEGER NOT NULL,
   "name" TEXT,
   "value" TEXT,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
-CREATE UNIQUE INDEX "user_props_userId_name"
-ON "userProps" (
-  "userId",
+CREATE UNIQUE INDEX "prop_user_id_name"
+ON "props" (
+  "user_id",
   "name"
 );
 
 CREATE TABLE "tags" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "userId" INTEGER NOT NULL,
+  "user_id" INTEGER NOT NULL,
   "name" TEXT,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
-CREATE UNIQUE INDEX "user_tags_userId_name"
+CREATE UNIQUE INDEX "tags_user_id_name"
 ON "tags" (
-  "userId",
+  "user_id",
   "name"
 );
 COMMIT;
 "#;
 
-pub const CLEAR_SQL: &'static str = r#"
+pub const RESET_SQL: &'static str = r#"
 BEGIN;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS weights;
-DROP TABLE IF EXISTS userProps;
+DROP TABLE IF EXISTS prop;
 COMMIT;
 "#;

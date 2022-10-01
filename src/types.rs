@@ -43,7 +43,7 @@ where
   T: Serialize + Send,
 {
   pub list: Vec<T>,
-  pub total: u64,
+  pub total: i64,
 }
 
 impl<T> PageData<T>
@@ -51,7 +51,7 @@ where
   T: Serialize + Send,
 {
   #[allow(dead_code)]
-  pub fn new(list: Vec<T>, total: u64) -> Self {
+  pub fn new(list: Vec<T>, total: i64) -> Self {
     PageData { list, total }
   }
 }

@@ -1,10 +1,10 @@
 use crate::utils::now_fmt;
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub id: Option<u32>,
+  pub id: Option<i64>,
   pub username: String,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub nickname: Option<String>,
@@ -14,85 +14,98 @@ pub struct User {
   pub birthday: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub gender: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub avatar: Option<String>,
   pub email: String,
   pub mobile: String,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub salt: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub meta: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub subscription: Option<i8>,
   #[serde(default = "now_fmt")]
   pub created_at: String,
   #[serde(default = "now_fmt")]
   pub updated_at: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct Weight {
-  pub id: Option<u32>,
-  pub user_id: u32,
+  pub id: Option<i64>,
+  pub user_id: i64,
   pub weight: f32,
   #[serde(default = "now_fmt")]
   pub created_at: String,
   #[serde(default = "now_fmt")]
   pub updated_at: String,
 }
+
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WeightQuery {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub id: Option<i64>,
+  pub user_id: Option<i64>,
+  pub date_start: Option<String>,
+  pub date_end: Option<String>,
+  pub limit: i64,
+  pub page: i64,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub uid: Option<u32>,
+  pub id: Option<i64>,
   pub username: Option<String>,
+  pub nickname: Option<String>,
   pub email: Option<String>,
   pub mobile: Option<String>,
   pub date_start: Option<String>,
   pub date_end: Option<String>,
-  pub limit: u32,
-  pub page: u32,
+  pub limit: i64,
+  pub page: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TagQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub user_id: Option<u32>,
+  pub id: Option<i64>,
+  pub user_id: Option<i64>,
   pub name: Option<String>,
   pub date_start: Option<String>,
   pub date_end: Option<String>,
-  pub limit: u32,
-  pub page: u32,
+  pub limit: i64,
+  pub page: i64,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserPropsQuery {
+pub struct PropQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub user_id: Option<u32>,
+  pub id: Option<i64>,
+  pub user_id: Option<i64>,
   pub name: Option<String>,
   pub date_start: Option<String>,
   pub date_end: Option<String>,
-  pub limit: u32,
-  pub page: u32,
+  pub limit: i64,
+  pub page: i64,
 }
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChartQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub user_id: Option<u32>,
+  pub user_id: Option<i64>,
   pub date_start: String,
   pub date_end: String,
-  pub limit: u32,
-  pub page: u32,
+  pub limit: i64,
+  pub page: i64,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Chart {
-  pub user_id: u32,
+  pub user_id: i64,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub nickname: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -108,6 +121,7 @@ pub struct Chart {
 }
 
 impl ChartQuery {
+  #[allow(dead_code)]
   pub fn new(date_start: String, date_end: String) -> Self {
     ChartQuery {
       user_id: None,
@@ -117,20 +131,17 @@ impl ChartQuery {
       page: 1,
     }
   }
-  pub fn offset(&self) -> u32 {
-    (self.page - 1) * self.limit
-  }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-  pub sub: u32,
+  pub sub: i64,
   pub company: String,
   pub exp: usize,
 }
 
 impl Claims {
-  pub fn new(sub: u32) -> Self {
+  pub fn new(sub: i64) -> Self {
     Self {
       sub,
       company: String::from("Tonnage"),
@@ -141,7 +152,7 @@ impl Claims {
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct TokenData {
-  pub uid: u32,
+  pub uid: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -162,19 +173,16 @@ impl TokenInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SignIn {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub id: Option<u32>,
+  pub id: Option<i64>,
   pub username: String,
   pub password: String,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub salt: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Tag {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub id: Option<u32>,
-  pub user_id: u32,
+  pub id: Option<i64>,
+  pub user_id: i64,
   pub name: String,
   #[serde(default = "now_fmt")]
   pub created_at: String,
@@ -182,15 +190,15 @@ pub struct Tag {
   pub updated_at: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
-pub struct UserProps {
+pub struct Prop {
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub id: Option<u32>,
+  pub id: Option<i64>,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub user_id: Option<u32>,
+  pub user_id: Option<i64>,
   pub name: String,
-  pub value: serde_json::Value,
+  pub value: String,
   #[serde(default = "now_fmt")]
   pub created_at: String,
   #[serde(default = "now_fmt")]

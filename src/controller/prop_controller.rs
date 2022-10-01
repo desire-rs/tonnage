@@ -1,12 +1,12 @@
 use crate::libs::get_poll;
-use crate::schema::{Weight, WeightQuery};
+use crate::schema::{Prop, PropQuery};
 use crate::service;
 use crate::types::{ApiPageResult, ApiResult, PageData, Resp};
 use desire::Request;
 use tokio_stream::StreamExt;
-pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
+pub async fn get_all(req: Request) -> ApiPageResult<Prop> {
   let poll = get_poll().await?;
-  let query = req.get_query::<WeightQuery>()?;
+  let query = req.get_query::<PropQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
   let mut page = 1;
@@ -15,6 +15,9 @@ pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
     page = query.page;
     if let Some(user_id) = query.user_id {
       wheres = format!("{} AND user_id = {}", wheres, user_id);
+    }
+    if let Some(name) = query.name {
+      wheres = format!("{} AND name = {}", wheres, name);
     }
     if let Some(date_start) = query.date_start {
       wheres = format!("{} AND created_at >= '{}'", wheres, date_start);
@@ -25,11 +28,11 @@ pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
   }
   let offset = (page - 1) * limit;
   let sql = format!(
-    "SELECT * FROM weights where {} LIMIT {} OFFSET {}",
+    "SELECT * FROM Prop where {} LIMIT {} OFFSET {}",
     wheres, limit, offset
   );
-  let count_sql = format!("SELECT COUNT(1) FROM weights where {}", wheres);
-  let mut rows = sqlx::query_as::<_, Weight>(&sql).fetch(&poll);
+  let count_sql = format!("SELECT COUNT(1) FROM Prop where {}", wheres);
+  let mut rows = sqlx::query_as(&sql).fetch(&poll);
   let mut list = Vec::new();
   while let Some(row) = rows.try_next().await? {
     list.push(row);
@@ -39,48 +42,50 @@ pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
   Ok(Resp::data(result))
 }
 
-pub async fn get_by_id(req: Request) -> ApiResult<Weight> {
+pub async fn get_by_id(req: Request) -> ApiResult<Prop> {
   let id = req.get_param::<i64>("id")?;
-  let result = service::get_weight_by_id(id).await?;
+  let result = service::get_prop_by_id(id).await?;
   Ok(Resp::data(result))
 }
 
-pub async fn create(req: Request) -> ApiResult<Weight> {
-  let item = req.body::<Weight>().await?;
-  let sql = "INSERT into weights(user_id, weight, created_at, updated_at) VALUES (?,?,?,?)";
+pub async fn create(req: Request) -> ApiResult<Prop> {
+  let prop = req.body::<Prop>().await?;
+  let sql = "INSERT into Prop(user_id, name, value, created_at, updated_at) VALUES (?,?,?,?,?)";
   info!("sql {}", sql);
   let poll = get_poll().await?;
   let result = sqlx::query(sql)
-    .bind(&item.user_id)
-    .bind(&item.weight)
-    .bind(&item.created_at)
-    .bind(&item.updated_at)
+    .bind(&prop.user_id)
+    .bind(&prop.name)
+    .bind(&prop.value)
+    .bind(&prop.created_at)
+    .bind(&prop.updated_at)
     .execute(&poll)
     .await?;
   let id = result.last_insert_rowid();
-  let result = service::get_weight_by_id(id).await?;
+  let result = service::get_prop_by_id(id).await?;
   Ok(Resp::data(result))
 }
 
-pub async fn update(req: Request) -> ApiResult<Weight> {
+pub async fn update(req: Request) -> ApiResult<Prop> {
   let poll = get_poll().await?;
   let id = req.get_param::<i64>("id")?;
-  let weight = req.body::<Weight>().await?;
-  let result = sqlx::query("UPDATE weights SET weight = ?, updated_at = ? WHERE id = ?")
-    .bind(&weight.weight)
-    .bind(&weight.updated_at)
+  let prop = req.body::<Prop>().await?;
+  let result = sqlx::query("UPDATE props SET name = ?, value = ?, updated_at = ? WHERE id = ?")
+    .bind(&prop.name)
+    .bind(&prop.value)
+    .bind(&prop.updated_at)
     .bind(id)
     .execute(&poll)
     .await?;
   info!("result: {:?}", result);
-  let result = service::get_weight_by_id(result.last_insert_rowid()).await?;
+  let result = service::get_prop_by_id(result.last_insert_rowid()).await?;
   Ok(Resp::data(result))
 }
 
 pub async fn remove(req: Request) -> ApiResult<String> {
   let poll = get_poll().await?;
   let id = req.get_param::<i64>("id")?;
-  let result = sqlx::query("DELETE FROM weights where id = ?")
+  let result = sqlx::query("DELETE FROM props where id = ?")
     .bind(id)
     .execute(&poll)
     .await?;

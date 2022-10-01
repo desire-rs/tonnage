@@ -17,14 +17,15 @@ use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use types::AnyResult;
 
-use controller::default_controller;
-use controller::tag_controller;
-use controller::user_controller;
-use controller::user_props_controller;
-use controller::weight_controller;
+// use controller::default_controller;
+use controller::*;
+// use controller::user_controller;
+// use controller::user_Prop_controller;
+// use controller::weight_controller;
 use desire::ServeDir;
 use desire::ServeFile;
 use std::env;
+
 #[tokio::main]
 async fn main() -> AnyResult<()> {
   let subscriber = FmtSubscriber::builder()
@@ -36,6 +37,7 @@ async fn main() -> AnyResult<()> {
   let env_file = format!("env/{}.env", env_name);
   dotenv::from_filename(env_file).ok();
   info!("APP running at {:?}, ENV:{}", ADDR, ENV_NAME.to_string());
+
   let mut app = Router::new();
   app.with(middleware::Auth);
   app.with(middleware::Logger);
@@ -45,19 +47,18 @@ async fn main() -> AnyResult<()> {
   app.get("/hello", default_controller::hello);
   app.get("/hello_page", default_controller::hello_page);
   app.get("/hello_option", default_controller::hello_option);
-  app.get("/db_init", default_controller::db_init);
-  app.get("/db_reset", default_controller::db_reset);
-
-  app.post("/signin", default_controller::signin);
-  app.post("/signup", default_controller::signup);
-  app.post("/signout", default_controller::signout);
   app.get("/token_data", default_controller::token_data);
+
+  app.get("/db_init", db_controller::db_init);
+  app.get("/db_reset", db_controller::db_reset);
+
+  app.post("/signin", auth_controller::signin);
+  app.post("/signup", auth_controller::signup);
 
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);
   app.put("/user/:id", user_controller::update);
   app.get("/user/:id", user_controller::get_by_id);
-  app.get("/user/:id/weight", user_controller::get_user_weights);
   app.delete("/user/:id", user_controller::remove);
 
   app.get("/weight", weight_controller::get_all);
@@ -72,14 +73,14 @@ async fn main() -> AnyResult<()> {
   app.delete("/tag/:id", tag_controller::remove);
   app.put("/tag/:id", tag_controller::update);
 
-  app.get("/userProps", user_props_controller::get_all);
-  app.get("/userProps/:id", user_props_controller::get_by_id);
-  app.post("/userProps", user_props_controller::create);
-  app.delete("/userProps/:id", user_props_controller::remove);
-  app.put("/userProps/:id", user_props_controller::update);
+  app.get("/Prop", prop_controller::get_all);
+  app.get("/Prop/:id", prop_controller::get_by_id);
+  app.post("/Prop", prop_controller::create);
+  app.delete("/Prop/:id", prop_controller::remove);
+  app.put("/Prop/:id", prop_controller::update);
 
   // chart
-  app.get("/chart", default_controller::chart);
+  // app.get("/chart", default_controller::chart);
 
   let sever = desire::new(ADDR);
   sever.run(app).await?;

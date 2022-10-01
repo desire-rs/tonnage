@@ -14,8 +14,8 @@ CREATE TABLE "users_demo" (
   "mobile" TEXT,
   "meta" TEXT,
   "subscription" INTEGER,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
 CREATE INDEX "email"
@@ -39,14 +39,14 @@ ON "users_demo" (
 ```sql
 CREATE TABLE "weights_demo" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "userId" INTEGER,
+  "user_id" INTEGER,
   "weight" REAL,
-  "createdAt" DATE NOT NULL,
-  "updatedAt" DATE
+  "created_at" DATE NOT NULL,
+  "updated_at" DATE
 );
 
-CREATE INDEX "userId"
+CREATE INDEX "user_id"
 ON "weights_demo" (
-  "userId"
+  "user_id"
 );
 ```

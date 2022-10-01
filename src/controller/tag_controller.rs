@@ -1,11 +1,11 @@
-use crate::config::DATABASE_URI;
+use crate::libs::get_poll;
 use crate::schema::{Tag, TagQuery};
 use crate::types::{ApiPageResult, ApiResult, PageData, Resp};
 use desire::Request;
-use rusqlite::params;
-use rusqlite::Connection;
-
+use crate::service;
+use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<Tag> {
+  let poll = get_poll().await?;
   let query = req.get_query::<TagQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
@@ -14,115 +14,85 @@ pub async fn get_all(req: Request) -> ApiPageResult<Tag> {
     limit = query.limit;
     page = query.page;
     if let Some(user_id) = query.user_id {
-      wheres = format!("{} AND userId = {}", wheres, user_id);
+      wheres = format!("{} AND user_id = {}", wheres, user_id);
     }
     if let Some(name) = query.name {
       wheres = format!("{} AND name = {}", wheres, name);
     }
     if let Some(date_start) = query.date_start {
-      wheres = format!("{} AND createdAt >= '{}'", wheres, date_start);
+      wheres = format!("{} AND created_at >= '{}'", wheres, date_start);
     }
     if let Some(date_end) = query.date_end {
-      wheres = format!("{} AND createdAt < '{}'", wheres, date_end);
+      wheres = format!("{} AND created_at < '{}'", wheres, date_end);
     }
   }
   let offset = (page - 1) * limit;
-  let conn = Connection::open(DATABASE_URI.as_str())?;
   let sql = format!(
-    "SELECT id, userId, name,createdAt, updatedAt FROM tags where {} LIMIT {} OFFSET {}",
+    "SELECT id, user_id, name,created_at, updated_at FROM tags where {} LIMIT {} OFFSET {}",
     wheres, limit, offset
   );
   let count_sql = format!("SELECT COUNT(1) FROM tags where {}", wheres);
-  let mut stmt = conn.prepare(&sql)?;
-  let rows = stmt.query_map([], |row| {
-    Ok(Tag {
-      id: row.get(0)?,
-      user_id: row.get(1)?,
-      name: row.get(2)?,
-      created_at: row.get(3)?,
-      updated_at: row.get(4)?,
-    })
-  })?;
-  let total = conn.query_row(&count_sql, [], |row| row.get(0))?;
-  let mut list: Vec<Tag> = Vec::new();
-  for tag in rows {
-    list.push(tag?);
+  let mut rows = sqlx::query_as::<_, Tag>(&sql).fetch(&poll);
+  let mut list = Vec::new();
+  while let Some(row) = rows.try_next().await? {
+    list.push(row);
   }
-  let result = PageData::new(list, total);
+  let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&poll).await?;
+  let result = PageData::new(list, total.0);
   Ok(Resp::data(result))
 }
 
 pub async fn get_by_id(req: Request) -> ApiResult<Tag> {
-  let id = req.get_param::<i32>("id")?;
-  let conn = Connection::open(DATABASE_URI.as_str())?;
-  let mut stmt =
-    conn.prepare("SELECT id, userId, name,createdAt, updatedAt FROM tags WHERE id = ?")?;
-
-  let tag = stmt.query_row([&id], |row| {
-    Ok(Tag {
-      id: row.get(0)?,
-      user_id: row.get(1)?,
-      name: row.get(2)?,
-      created_at: row.get(3)?,
-      updated_at: row.get(4)?,
-    })
-  })?;
-  Ok(Resp::data(tag))
+  let id = req.get_param::<i64>("id")?;
+  let result = service::get_tag_by_id(id).await?;
+  Ok(Resp::data(result))
 }
 
 pub async fn create(req: Request) -> ApiResult<Tag> {
   let tag = req.body::<Tag>().await?;
-  let conn = Connection::open(DATABASE_URI.as_str())?;
-  let sql = "INSERT into tags(userId, name, createdAt, updatedAt) VALUES (?,?,?,?)";
-  let result = conn.execute(
-    sql,
-    params![&tag.user_id, &tag.name, &tag.created_at, &tag.updated_at],
-  )?;
-  info!("result: {:?}", result);
-  let tag = conn.query_row(
-    "SELECT id,userId,name,createdAt,updatedAt from tags where userId = ? AND name = ?",
-    params![&tag.user_id, &tag.name],
-    |row| {
-      Ok(Tag {
-        id: row.get(0)?,
-        user_id: row.get(1)?,
-        name: row.get(2)?,
-        created_at: row.get(3)?,
-        updated_at: row.get(4)?,
-      })
-    },
-  )?;
+  let sql = "INSERT into tags(user_id, name, created_at, updated_at) VALUES (?,?,?,?)";
+  info!("sql {}", sql);
+  let poll = get_poll().await?;
+  let result = sqlx::query(sql)
+    .bind(&tag.user_id)
+    .bind(&tag.name)
+    .bind(&tag.created_at)
+    .bind(&tag.updated_at)
+    .execute(&poll)
+    .await?
+    .last_insert_rowid();
+  let tag = sqlx::query_as::<_, Tag>("select * from tags where id = ?")
+    .bind(result)
+    .fetch_one(&poll) // -> Vec<Country>
+    .await?;
   Ok(Resp::data(tag))
 }
 
 pub async fn update(req: Request) -> ApiResult<Tag> {
-  let id = req.get_param::<u32>("id")?;
+  let poll = get_poll().await?;
+  let id = req.get_param::<i64>("id")?;
   let tag = req.body::<Tag>().await?;
-  let conn = Connection::open(DATABASE_URI.as_str())?;
-  let sql = "UPDATE tags SET name = ?, updatedAt = ? WHERE id = ?";
-  let result = conn.execute(sql, params![&tag.name, &tag.updated_at, id])?;
-
+  let result = sqlx::query("UPDATE tags SET name = ?, updated_at = ? WHERE id = ?")
+    .bind(&tag.name)
+    .bind(&tag.updated_at)
+    .bind(id)
+    .execute(&poll)
+    .await?;
   info!("result: {:?}", result);
-  let tag = conn.query_row(
-    "SELECT id,userId,name,createdAt,updatedAt from tags where id = ?",
-    params![id],
-    |row| {
-      Ok(Tag {
-        id: row.get(0)?,
-        user_id: row.get(1)?,
-        name: row.get(2)?,
-        created_at: row.get(3)?,
-        updated_at: row.get(4)?,
-      })
-    },
-  )?;
+  let tag = sqlx::query_as::<_, Tag>("select * from tags where id = ?")
+    .bind(id)
+    .fetch_one(&poll) // -> Vec<Country>
+    .await?;
   Ok(Resp::data(tag))
 }
 
 pub async fn remove(req: Request) -> ApiResult<String> {
-  let id = req.get_param::<u32>("id")?;
-  let conn = Connection::open(DATABASE_URI.as_str())?;
-  let result = conn.execute("DELETE FROM tags where id = ?", [&id])?;
-  info!("result: {}", result);
+  let poll = get_poll().await?;
+  let id = req.get_param::<i64>("id")?;
+  let result = sqlx::query("DELETE FROM tags where id = ?")
+    .bind(id)
+    .execute(&poll)
+    .await?;
+  info!("result: {:?}", result);
   Ok(Resp::data("OK".to_string()))
 }
