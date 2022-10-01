@@ -124,15 +124,9 @@ pub async fn user_info(req: Request) -> ApiResult<UserInfo> {
     .ok_or_else(|| anyhow::anyhow!("token is none"))
     .map(|x| x.clone())?;
   let id = token_data.uid;
-  info!("{:?}", token_data);
   let user = service::get_user_by_id(id).await?;
-  info!("user {:?}", user);
   let tags = service::get_user_tags(id).await?;
-  info!("tags {:?}", tags);
-
   let props = service::get_user_props(id).await?;
-  info!("props {:?}", props);
-
   let info = UserInfo::new(user, tags, props);
   Ok(Resp::data(info))
 }
