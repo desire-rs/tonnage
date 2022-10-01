@@ -94,9 +94,9 @@ COMMIT;
 
 pub const CLEAR_SQL: &'static str = r#"
 BEGIN;
-DROP TABLE tags;
-DROP TABLE users;
-DROP TABLE weights;
-DROP TABLE userProps;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS weights;
+DROP TABLE IF EXISTS userProps;
 COMMIT;
 "#;
