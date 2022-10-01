@@ -55,6 +55,30 @@ pub struct UserQuery {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct TagQuery {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub user_id: Option<u32>,
+  pub name: Option<String>,
+  pub date_start: Option<String>,
+  pub date_end: Option<String>,
+  pub limit: u32,
+  pub page: u32,
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserPropsQuery {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub user_id: Option<u32>,
+  pub name: Option<String>,
+  pub date_start: Option<String>,
+  pub date_end: Option<String>,
+  pub limit: u32,
+  pub page: u32,
+}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChartQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub user_id: Option<u32>,

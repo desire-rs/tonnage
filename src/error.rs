@@ -19,7 +19,6 @@ pub enum Error {
 
 impl IntoResponse for Error {
   fn into_response(self) -> Result {
-    error!("err {:?}", self);
     let val = self.to_string();
     Response::with_status(500, val)
   }

@@ -58,6 +58,15 @@ pub async fn get_all(req: Request) -> ApiPageResult<User> {
     if let Some(email) = query.email {
       wheres = format!("{} AND email = {}", wheres, email);
     }
+    if let Some(mobile) = query.mobile {
+      wheres = format!("{} AND mobile = {}", wheres, mobile);
+    }
+    if let Some(date_start) = query.date_start {
+      wheres = format!("{} AND createdAt >= '{}'", wheres, date_start);
+    }
+    if let Some(date_end) = query.date_end {
+      wheres = format!("{} AND createdAt < '{}'", wheres, date_end);
+    }
   }
   let offset = (page - 1) * limit;
   let conn = Connection::open(DATABASE_URI.as_str())?;
@@ -66,7 +75,7 @@ pub async fn get_all(req: Request) -> ApiPageResult<User> {
   info!("sql: {}", sql);
   info!("count_sql: {}", count_sql);
   let mut stmt = conn.prepare(&sql)?;
-  let user_iter = stmt.query_map([], |row| {
+  let rows = stmt.query_map([], |row| {
     Ok(User {
       id: row.get(0)?,
       username: row.get(1)?,
@@ -84,11 +93,9 @@ pub async fn get_all(req: Request) -> ApiPageResult<User> {
     })
   })?;
 
-  let total: u64 = conn
-    .query_row(count_sql.as_str(), [], |row| row.get(0))
-    .unwrap();
+  let total: u64 = conn.query_row(&count_sql, [], |row| row.get(0))?;
   let mut list: Vec<User> = Vec::new();
-  for user in user_iter {
+  for user in rows {
     list.push(user?);
   }
   let result = PageData::new(list, total);

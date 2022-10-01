@@ -1,13 +1,39 @@
 use crate::config::DATABASE_URI;
-use crate::schema::Tag;
+use crate::schema::{Tag, TagQuery};
 use crate::types::{ApiPageResult, ApiResult, PageData, Resp};
 use desire::Request;
 use rusqlite::params;
 use rusqlite::Connection;
 
-pub async fn get_all(_req: Request) -> ApiPageResult<Tag> {
+pub async fn get_all(req: Request) -> ApiPageResult<Tag> {
+  let query = req.get_query::<TagQuery>()?;
+  let mut wheres = format!("1 = 1");
+  let mut limit = 20;
+  let mut page = 1;
+  if let Some(query) = query {
+    limit = query.limit;
+    page = query.page;
+    if let Some(user_id) = query.user_id {
+      wheres = format!("{} AND userId = {}", wheres, user_id);
+    }
+    if let Some(name) = query.name {
+      wheres = format!("{} AND name = {}", wheres, name);
+    }
+    if let Some(date_start) = query.date_start {
+      wheres = format!("{} AND createdAt >= '{}'", wheres, date_start);
+    }
+    if let Some(date_end) = query.date_end {
+      wheres = format!("{} AND createdAt < '{}'", wheres, date_end);
+    }
+  }
+  let offset = (page - 1) * limit;
   let conn = Connection::open(DATABASE_URI.as_str())?;
-  let mut stmt = conn.prepare("SELECT id, userId, name,createdAt, updatedAt FROM tags")?;
+  let sql = format!(
+    "SELECT id, userId, name,createdAt, updatedAt FROM tags where {} LIMIT {} OFFSET {}",
+    wheres, limit, offset
+  );
+  let count_sql = format!("SELECT COUNT(1) FROM tags where {}", wheres);
+  let mut stmt = conn.prepare(&sql)?;
   let rows = stmt.query_map([], |row| {
     Ok(Tag {
       id: row.get(0)?,
@@ -17,12 +43,12 @@ pub async fn get_all(_req: Request) -> ApiPageResult<Tag> {
       updated_at: row.get(4)?,
     })
   })?;
+  let total = conn.query_row(&count_sql, [], |row| row.get(0))?;
   let mut list: Vec<Tag> = Vec::new();
   for tag in rows {
     list.push(tag?);
   }
-  let len = list.len() as u64;
-  let result = PageData::new(list, len);
+  let result = PageData::new(list, total);
   Ok(Resp::data(result))
 }
 
