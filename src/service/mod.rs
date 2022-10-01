@@ -1,11 +1,10 @@
-use crate::libs::get_poll;
+use crate::libs::get_pool;
 use crate::schema::{Prop, Tag, User, Weight};
 use crate::types::AnyResult;
 use sqlx::Row;
 use tokio_stream::StreamExt;
-#[allow(dead_code)]
 pub async fn get_user_tags(user_id: i64) -> AnyResult<Vec<Tag>> {
-  let pool = get_poll().await?;
+  let pool = get_pool().await?;
   let mut list: Vec<Tag> = Vec::new();
   let sql = format!("select id, user_id, name,created_at, updated_at from tags where user_id = ?");
   let mut rows = sqlx::query(&sql).bind(user_id).fetch(&pool);
@@ -21,12 +20,11 @@ pub async fn get_user_tags(user_id: i64) -> AnyResult<Vec<Tag>> {
   }
   Ok(list)
 }
-#[allow(dead_code)]
-pub async fn get_user_prop(user_id: i64) -> AnyResult<Vec<Prop>> {
+pub async fn get_user_props(user_id: i64) -> AnyResult<Vec<Prop>> {
   let mut list: Vec<Prop> = Vec::new();
-  let pool = get_poll().await?;
+  let pool = get_pool().await?;
   let sql =
-    format!("select id, user_id, name, value, created_at, updated_at from prop where user_id = ?");
+    format!("select id, user_id, name, value, created_at, updated_at from props where user_id = ?");
   let mut rows = sqlx::query(&sql).bind(user_id).fetch(&pool);
 
   while let Some(row) = rows.try_next().await? {
@@ -43,7 +41,7 @@ pub async fn get_user_prop(user_id: i64) -> AnyResult<Vec<Prop>> {
   Ok(list)
 }
 pub async fn get_user_by_id(id: i64) -> AnyResult<User> {
-  let pool = get_poll().await?;
+  let pool = get_pool().await?;
   let mut user = sqlx::query_as::<_, User>("SELECT * FROM users where id = ?")
     .bind(id)
     .fetch_one(&pool)
@@ -53,8 +51,8 @@ pub async fn get_user_by_id(id: i64) -> AnyResult<User> {
   Ok(user)
 }
 pub async fn get_tag_by_id(id: i64) -> AnyResult<Tag> {
-  let pool = get_poll().await?;
-  let tag: Tag = sqlx::query_as("SELECT * FROM users where id = ?")
+  let pool = get_pool().await?;
+  let tag: Tag = sqlx::query_as("SELECT * FROM tags where id = ?")
     .bind(id)
     .fetch_one(&pool)
     .await?;
@@ -62,8 +60,8 @@ pub async fn get_tag_by_id(id: i64) -> AnyResult<Tag> {
   Ok(tag)
 }
 pub async fn get_prop_by_id(id: i64) -> AnyResult<Prop> {
-  let pool = get_poll().await?;
-  let prop = sqlx::query_as("SELECT * FROM users where id = ?")
+  let pool = get_pool().await?;
+  let prop = sqlx::query_as("SELECT * FROM props where id = ?")
     .bind(id)
     .fetch_one(&pool)
     .await?;
@@ -71,8 +69,8 @@ pub async fn get_prop_by_id(id: i64) -> AnyResult<Prop> {
 }
 
 pub async fn get_weight_by_id(id: i64) -> AnyResult<Weight> {
-  let pool = get_poll().await?;
-  let item = sqlx::query_as("SELECT * FROM users where id = ?")
+  let pool = get_pool().await?;
+  let item = sqlx::query_as("SELECT * FROM weights where id = ?")
     .bind(id)
     .fetch_one(&pool)
     .await?;

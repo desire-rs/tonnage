@@ -57,6 +57,7 @@ async fn main() -> AnyResult<()> {
 
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);
+  app.get("/user/info", user_controller::user_info);
   app.put("/user/:id", user_controller::update);
   app.get("/user/:id", user_controller::get_by_id);
   app.delete("/user/:id", user_controller::remove);
@@ -73,14 +74,14 @@ async fn main() -> AnyResult<()> {
   app.delete("/tag/:id", tag_controller::remove);
   app.put("/tag/:id", tag_controller::update);
 
-  app.get("/Prop", prop_controller::get_all);
-  app.get("/Prop/:id", prop_controller::get_by_id);
-  app.post("/Prop", prop_controller::create);
-  app.delete("/Prop/:id", prop_controller::remove);
-  app.put("/Prop/:id", prop_controller::update);
+  app.get("/prop", prop_controller::get_all);
+  app.get("/prop/:id", prop_controller::get_by_id);
+  app.post("/prop", prop_controller::create);
+  app.delete("/prop/:id", prop_controller::remove);
+  app.put("/prop/:id", prop_controller::update);
 
   // chart
-  // app.get("/chart", default_controller::chart);
+  app.get("/chart", chart_controller::chart);
 
   let sever = desire::new(ADDR);
   sever.run(app).await?;

@@ -1,11 +1,11 @@
-use crate::libs::get_poll;
+use crate::libs::get_pool;
 use crate::schema::{Prop, PropQuery};
 use crate::service;
 use crate::types::{ApiPageResult, ApiResult, PageData, Resp};
 use desire::Request;
 use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<Prop> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let query = req.get_query::<PropQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
@@ -28,16 +28,16 @@ pub async fn get_all(req: Request) -> ApiPageResult<Prop> {
   }
   let offset = (page - 1) * limit;
   let sql = format!(
-    "SELECT * FROM Prop where {} LIMIT {} OFFSET {}",
+    "SELECT * FROM props where {} LIMIT {} OFFSET {}",
     wheres, limit, offset
   );
-  let count_sql = format!("SELECT COUNT(1) FROM Prop where {}", wheres);
-  let mut rows = sqlx::query_as(&sql).fetch(&poll);
+  let count_sql = format!("SELECT COUNT(1) FROM props where {}", wheres);
+  let mut rows = sqlx::query_as(&sql).fetch(&pool);
   let mut list = Vec::new();
   while let Some(row) = rows.try_next().await? {
     list.push(row);
   }
-  let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&poll).await?;
+  let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&pool).await?;
   let result = PageData::new(list, total.0);
   Ok(Resp::data(result))
 }
@@ -50,16 +50,16 @@ pub async fn get_by_id(req: Request) -> ApiResult<Prop> {
 
 pub async fn create(req: Request) -> ApiResult<Prop> {
   let prop = req.body::<Prop>().await?;
-  let sql = "INSERT into Prop(user_id, name, value, created_at, updated_at) VALUES (?,?,?,?,?)";
+  let sql = "INSERT into props(user_id, name, value, created_at, updated_at) VALUES (?,?,?,?,?)";
   info!("sql {}", sql);
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let result = sqlx::query(sql)
     .bind(&prop.user_id)
     .bind(&prop.name)
     .bind(&prop.value)
     .bind(&prop.created_at)
     .bind(&prop.updated_at)
-    .execute(&poll)
+    .execute(&pool)
     .await?;
   let id = result.last_insert_rowid();
   let result = service::get_prop_by_id(id).await?;
@@ -67,7 +67,7 @@ pub async fn create(req: Request) -> ApiResult<Prop> {
 }
 
 pub async fn update(req: Request) -> ApiResult<Prop> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let id = req.get_param::<i64>("id")?;
   let prop = req.body::<Prop>().await?;
   let result = sqlx::query("UPDATE props SET name = ?, value = ?, updated_at = ? WHERE id = ?")
@@ -75,7 +75,7 @@ pub async fn update(req: Request) -> ApiResult<Prop> {
     .bind(&prop.value)
     .bind(&prop.updated_at)
     .bind(id)
-    .execute(&poll)
+    .execute(&pool)
     .await?;
   info!("result: {:?}", result);
   let result = service::get_prop_by_id(result.last_insert_rowid()).await?;
@@ -83,11 +83,11 @@ pub async fn update(req: Request) -> ApiResult<Prop> {
 }
 
 pub async fn remove(req: Request) -> ApiResult<String> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let id = req.get_param::<i64>("id")?;
   let result = sqlx::query("DELETE FROM props where id = ?")
     .bind(id)
-    .execute(&poll)
+    .execute(&pool)
     .await?;
   info!("result: {:?}", result);
   Ok(Resp::data("OK".to_string()))

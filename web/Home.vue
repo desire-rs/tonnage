@@ -1,35 +1,36 @@
 <template lang="pug">
 .container
   .chart
-    canvas(id="myChart")
+    canvas(id='myChart')
   .data
     .form
-      select(name="users" id="users" @change="onUserChange($event)")
-        option(v-for="user in users" :value="user.id") {{  user.nickname  }}
-      input(type="number" placeholder="体重" v-model="weight")
-      button(@click="submit") 提交
-    table(class="data-table")
-      tr
-        th nickname
-        th weight
-        th date
-      tr(v-for="item in data")
-        td(v-text="item.nickname")
-        td(v-text="item.weight")
-        td(v-text="item.date")
+      select(name='dataType' id='dataType' @change='onDataTypeChange($event)')
+        option(v-for='dataType in dataTypes' :value='dataType.value') {{  dataType.name  }}
+      input(type='number' placeholder='体重' v-model='weight')
+      button(@click='submit') 提交
 </template>
 
 <script>
 import Chart from "chart.js/auto";
 import axios from "axios";
 axios.defaults.baseURL = window.location.href;
+axios.defaults.headers = {
+  Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+};
 import _ from "lodash";
 export default {
   data() {
     return {
+      dataTypes: [
+        { name: "周", value: "W" },
+        { name: "月", value: "M" },
+        { name: "年", value: "Y" },
+      ],
+      showTable: false,
       name: "Tonnage",
       user_id: null,
       weight: 0,
+      userInfo: null,
       users: [],
       charts: [],
       weights: [],
@@ -48,29 +49,37 @@ export default {
         this.$router.push("/signin");
         return;
       }
-      // this.loadData();
+      this.loadData();
     },
     async submit() {
-      let data = { user_id: this.user_id, weight: this.weight };
+      let data = { user_id: this.usersInfo.user.id, weight: this.weight };
       const result = await axios.post("/weight", data);
       console.log(result.data);
     },
     async loadData() {
-      let usersResult = await axios.get("/user");
-      let chartResult = await axios.get("/chart");
+      const userInfo = await axios.get("/user/info");
+      const chartResult = await axios.get("/chart");
+      this.userInfo = userInfo.data.data;
       this.charts = chartResult.data.data.list;
       this.data = chartResult.data.data.list.slice(0, 10);
-      this.users = usersResult.data.data.list;
-      this.user_id =
-        this.users.length > 0 ? _.get(_.first(this.users), "id", null) : null;
       const users = _.groupBy(chartResult.data.data.list, "user_id");
       this.labels = _.map(_.first(Object.values(users)), "date");
+      const borderColor = _.get(
+        _.find(this.userInfo.props, { name: "borderColor" }),
+        "value",
+        "rgba(255,0,0,1)"
+      );
+      const backgroundColor = _.get(
+        _.find(this.userInfo.props, { name: "backgroundColor" }),
+        "value",
+        "rgba(255,0,0,1)"
+      );
       for (const user of Object.values(users)) {
         this.datasets.push({
-          label: user[0].nickname,
+          label: this.userInfo.user.nickname,
           data: _.map(user, "weight"),
-          borderColor: user[0].borderColor || "rgba(255,0,0,1)",
-          backgroundColor: user[0].backgroundColor || "rgba(255,0,0,0.5)",
+          borderColor,
+          backgroundColor,
           fill: false,
           lineTension: 0,
         });
@@ -87,39 +96,10 @@ export default {
         },
       });
     },
-    onUserChange(event) {
+    onDataTypeChange(event) {
       console.log(event.target.value);
       const user_id = event.target.value;
       this.user_id = Number(user_id);
-    },
-    async getChartData() {
-      let usersResult = await axios.get("/user");
-      let chartResult = await axios.get("/chart");
-      this.data = chartResult.data.data.list.slice(0, 10);
-      this.users = usersResult.data.data.list;
-      const users = _.groupBy(chartResult.data.data.list, "user_id");
-      for (const user of Object.values(users)) {
-        this.labels = _.map(user, "date");
-        this.datasets.push({
-          label: user[0].nickname,
-          data: _.map(user, "weight"),
-          borderColor: user[0].borderColor || "rgba(255,0,0,1)",
-          backgroundColor: user[0].backgroundColor || "rgba(255,0,0,0.5)",
-          fill: false,
-          lineTension: 0,
-        });
-      }
-      const ctx = document.getElementById("myChart").getContext("2d");
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: this.labels,
-          datasets: this.datasets,
-        },
-        options: {
-          responsive: false,
-        },
-      });
     },
   },
 };

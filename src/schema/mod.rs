@@ -1,7 +1,6 @@
 use crate::utils::now_fmt;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-#[serde(rename_all = "camelCase")]
 pub struct User {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -27,7 +26,6 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-#[serde(rename_all = "camelCase")]
 pub struct Weight {
   pub id: Option<i64>,
   pub user_id: i64,
@@ -38,9 +36,7 @@ pub struct Weight {
   pub updated_at: String,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct WeightQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -52,7 +48,6 @@ pub struct WeightQuery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct UserQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -67,7 +62,6 @@ pub struct UserQuery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TagQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -80,7 +74,6 @@ pub struct TagQuery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct PropQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -92,30 +85,18 @@ pub struct PropQuery {
   pub page: i64,
 }
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ChartQuery {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub user_id: Option<i64>,
-  pub date_start: String,
-  pub date_end: String,
+  pub date_start: Option<String>,
+  pub date_end: Option<String>,
   pub limit: i64,
   pub page: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Chart {
   pub user_id: i64,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub nickname: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub email: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub mobile: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub border_color: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub background_color: Option<String>,
   pub weight: f32,
   pub date: String,
 }
@@ -125,8 +106,8 @@ impl ChartQuery {
   pub fn new(date_start: String, date_end: String) -> Self {
     ChartQuery {
       user_id: None,
-      date_start,
-      date_end,
+      date_start: Some(date_start),
+      date_end: Some(date_end),
       limit: 20,
       page: 1,
     }
@@ -191,7 +172,6 @@ pub struct Tag {
 }
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-#[serde(rename_all = "camelCase")]
 pub struct Prop {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<i64>,
@@ -203,4 +183,16 @@ pub struct Prop {
   pub created_at: String,
   #[serde(default = "now_fmt")]
   pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfo {
+  pub user: User,
+  pub tags: Vec<Tag>,
+  pub props: Vec<Prop>,
+}
+impl UserInfo {
+  pub fn new(user: User, tags: Vec<Tag>, props: Vec<Prop>) -> Self {
+    UserInfo { user, tags, props }
+  }
 }

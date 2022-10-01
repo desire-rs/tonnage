@@ -38,11 +38,19 @@ impl Middleware for Auth {
     let uri = req.uri().to_string();
     let path = req.path();
     let mut skip = false;
-    for value in EXEMPT_ROUTES {
-      if path.starts_with(value) {
-        skip = true;
+    if EXEMPT_ROUTES.contains(&path) {
+      skip = true;
+    } else {
+      for value in EXEMPT_ROUTES {
+        if value == &"/" {
+          continue;
+        }
+        if path.starts_with(value) {
+          skip = true;
+        }
       }
     }
+
     if skip {
       next.run(req).await
     } else {

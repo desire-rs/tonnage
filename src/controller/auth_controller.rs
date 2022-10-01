@@ -1,6 +1,6 @@
 use crate::config::JWT_SECRET;
 use crate::error::Error;
-use crate::libs::get_poll;
+use crate::libs::get_pool;
 use crate::schema::{Claims, SignIn, TokenInfo, User};
 use crate::service;
 use crate::types::{ApiResult, Resp};
@@ -9,7 +9,7 @@ use desire::Request;
 use jsonwebtoken::{encode, EncodingKey, Header};
 
 pub async fn signup(req: Request) -> ApiResult<TokenInfo> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let mut user = req.body::<User>().await?;
   let salt = gen_salt();
   let password = sha_256(&user.password.unwrap(), &salt);
@@ -27,7 +27,7 @@ pub async fn signup(req: Request) -> ApiResult<TokenInfo> {
   .bind(&user.mobile)
   .bind(&user.created_at)
   .bind(&user.updated_at)
-  .execute(&poll)
+  .execute(&pool)
   .await?;
   let id = result.last_insert_rowid();
   let user = service::get_user_by_id(id).await?;
@@ -42,11 +42,11 @@ pub async fn signup(req: Request) -> ApiResult<TokenInfo> {
 }
 
 pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let login_user = req.body::<SignIn>().await?;
   let user: User = sqlx::query_as("SELECT * from users WHERE username = ? LIMIT 1")
     .bind(&login_user.username)
-    .fetch_one(&poll)
+    .fetch_one(&pool)
     .await?;
 
   let password = sha_256(&login_user.password, &user.salt.unwrap());

@@ -1,12 +1,12 @@
-use crate::libs::get_poll;
-use crate::schema::{User, UserQuery};
+use crate::libs::get_pool;
+use crate::schema::{TokenData, User, UserInfo, UserQuery};
 use crate::service;
 use crate::types::{ApiPageResult, ApiResult, PageData, Resp};
 use crate::utils::{gen_salt, sha_256};
 use desire::Request;
 use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<User> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let query = req.get_query::<UserQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
@@ -42,12 +42,14 @@ pub async fn get_all(req: Request) -> ApiPageResult<User> {
     wheres, limit, offset
   );
   let count_sql = format!("SELECT COUNT(1) FROM users where {}", wheres);
-  let mut rows = sqlx::query_as::<_, User>(&sql).fetch(&poll);
+  let mut rows = sqlx::query_as::<_, User>(&sql).fetch(&pool);
   let mut list = Vec::new();
-  while let Some(row) = rows.try_next().await? {
+  while let Some(mut row) = rows.try_next().await? {
+    row.password = None;
+    row.salt = None;
     list.push(row);
   }
-  let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&poll).await?;
+  let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&pool).await?;
   let result = PageData::new(list, total.0);
   Ok(Resp::data(result))
 }
@@ -65,7 +67,7 @@ pub async fn create(req: Request) -> ApiResult<User> {
   user.password = Some(password);
   user.salt = Some(salt);
   info!("user: {:?}", user);
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let result = sqlx::query("INSERT INTO users (username,nickname,password,salt,birthday,gender,email,mobile,created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
   .bind(&user.username)
   .bind(&user.nickname)
@@ -77,7 +79,7 @@ pub async fn create(req: Request) -> ApiResult<User> {
   .bind(&user.mobile)
   .bind(&user.created_at)
   .bind(&user.updated_at)
-  .execute(&poll)
+  .execute(&pool)
   .await?;
   let id = result.last_insert_rowid();
   let result = service::get_user_by_id(id).await?;
@@ -85,7 +87,7 @@ pub async fn create(req: Request) -> ApiResult<User> {
 }
 
 pub async fn update(req: Request) -> ApiResult<User> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let id = req.get_param::<i64>("id")?;
   let user = req.body::<User>().await?;
   let result = sqlx::query("UPDATE users SET nickname = ?,email=?,mobile =?,avatar =?,gender=?, updated_at = ? WHERE id = ?")
@@ -96,7 +98,7 @@ pub async fn update(req: Request) -> ApiResult<User> {
     .bind(&user.gender)
     .bind(&user.updated_at)
     .bind(id)
-    .execute(&poll)
+    .execute(&pool)
     .await?;
   info!("result: {:?}", result);
   let result = service::get_user_by_id(id).await?;
@@ -104,12 +106,33 @@ pub async fn update(req: Request) -> ApiResult<User> {
 }
 
 pub async fn remove(req: Request) -> ApiResult<String> {
-  let poll = get_poll().await?;
+  let pool = get_pool().await?;
   let id = req.get_param::<i64>("id")?;
   let result = sqlx::query("DELETE FROM users where id = ?")
     .bind(id)
-    .execute(&poll)
+    .execute(&pool)
     .await?;
   info!("result: {:?}", result);
   Ok(Resp::data("OK".to_string()))
+}
+
+pub async fn user_info(req: Request) -> ApiResult<UserInfo> {
+  let token_data = req
+    .inner
+    .extensions()
+    .get::<TokenData>()
+    .ok_or_else(|| anyhow::anyhow!("token is none"))
+    .map(|x| x.clone())?;
+  let id = token_data.uid;
+  info!("{:?}", token_data);
+  let user = service::get_user_by_id(id).await?;
+  info!("user {:?}", user);
+  let tags = service::get_user_tags(id).await?;
+  info!("tags {:?}", tags);
+
+  let props = service::get_user_props(id).await?;
+  info!("props {:?}", props);
+
+  let info = UserInfo::new(user, tags, props);
+  Ok(Resp::data(info))
 }
