@@ -78,7 +78,7 @@ pub async fn vcode(req: Request) -> ApiResult<VCode> {
     .ok_or(option_error("redis"))?;
   let mut redis = client.get_async_connection().await?;
   let user_id = token_data.uid;
-  let key = format!("vcode:tonnage:{}", user_id);
+  let key = format!("tonnage:vcode:{}", user_id);
   let exists: bool = redis.exists(&key).await?;
   if !exists {
     let code = gen_code(6);

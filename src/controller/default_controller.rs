@@ -35,7 +35,7 @@ pub async fn liveness(req: Request) -> ApiResult<Liveness> {
     .ok_or(option_error("redis"))?;
   let mut redis = client.get_async_connection().await?;
   let mut result = Liveness::default();
-  let key = "liveness:tonnage";
+  let key = "tonnage:liveness";
   let value = now();
   redis.set_nx(key, value).await?;
   redis.expire(key, 600).await?;
