@@ -36,7 +36,11 @@ async fn main() -> AnyResult<()> {
   let env_name = arguments.get(1).expect("env name must be provided");
   let env_file = format!("env/{}.env", env_name);
   dotenv::from_filename(env_file).ok();
-  info!("APP running at {:?}, ENV:{}", ADDR, ENV_NAME.to_string());
+  info!(
+    "APP running at {:?}, ENV:{}",
+    ADDR.to_string(),
+    ENV_NAME.to_string()
+  );
 
   let mut app = Router::new();
   app.with(middleware::Auth);
@@ -85,7 +89,7 @@ async fn main() -> AnyResult<()> {
   // chart
   app.get("/chart", chart_controller::chart);
 
-  let sever = desire::new(ADDR);
+  let sever = desire::new(ADDR.as_str());
   sever.run(app).await?;
   Ok(())
 }

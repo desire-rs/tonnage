@@ -2,13 +2,13 @@ use once_cell::sync::Lazy;
 use std::env;
 pub const JWT_SECRET: &'static str = "8B0271EC-EAA6-48B7-8161-F90B86F454E4";
 pub const EXEMPT_ROUTES: &[&str] = &["/", "/signin", "/signup", "/hello", "/assets"];
+pub static ADDR: Lazy<String> = Lazy::new(|| env::var("ADDR").expect("ADDR must be set"));
 pub static ENV_NAME: Lazy<String> =
   Lazy::new(|| env::var("ENV_NAME").expect("ENV_NAME must be set"));
 pub static DATABASE_URI: Lazy<String> =
   Lazy::new(|| env::var("DATABASE_URI").expect("DATABASE_URI must be set"));
 pub static REDIS_URI: Lazy<String> =
   Lazy::new(|| env::var("REDIS_URI").expect("REDIS_URI must be set"));
-pub const ADDR: &'static str = "0.0.0.0:12306";
 // pub const DATABASE_URI.as_str(): &'static str = "db/tonnage.db";
 pub const INIT_SQL: &'static str = r#"
 BEGIN;
