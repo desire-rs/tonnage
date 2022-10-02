@@ -13,6 +13,8 @@ pub enum Error {
   IoError(#[from] std::io::Error),
   #[error("sqlx::Error {0:?}")]
   SqlxError(#[from] sqlx::Error),
+  #[error("redis::Error {0:?}")]
+  RedisError(#[from] redis::RedisError),
   #[error("jsonwebtoken::errors::Error {0:?}")]
   JwtError(#[from] jsonwebtoken::errors::Error),
   #[error("unwrap `{0}` is not none")]

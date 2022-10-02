@@ -6,6 +6,10 @@ pub fn now_fmt() -> String {
   dt.format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
+pub fn now() -> String {
+  Utc::now().to_string()
+}
+
 pub fn sha_256(value: &str, salt: &str) -> String {
   let mut hasher = Sha256::new();
   hasher.update(value.as_bytes());

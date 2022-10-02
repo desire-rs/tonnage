@@ -49,6 +49,7 @@ async fn main() -> AnyResult<()> {
   app.get("/hello_page", default_controller::hello_page);
   app.get("/hello_option", default_controller::hello_option);
   app.get("/token_data", default_controller::token_data);
+  app.get("/liveness", default_controller::liveness);
 
   app.get("/db_init", db_controller::db_init);
   app.get("/db_reset", db_controller::db_reset);

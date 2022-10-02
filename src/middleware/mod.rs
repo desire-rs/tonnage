@@ -8,7 +8,7 @@ use desire::Request;
 use desire::Result;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use std::time::Instant;
-use crate::libs::get_pool;
+use crate::libs::{get_pool, get_redis_client};
 pub struct Logger;
 
 #[async_trait::async_trait]
@@ -83,7 +83,9 @@ pub struct DB;
 impl Middleware for DB {
   async fn handle(&self, mut req: Request, next: desire::Next<'_>) -> Result {
     let pool = get_pool().await?;
+    let client = get_redis_client().await?;
     req.inner.extensions_mut().insert(pool);
+    req.inner.extensions_mut().insert(client);
     next.run(req).await
   }
 }

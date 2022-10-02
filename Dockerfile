@@ -1,5 +1,6 @@
-FROM node:14.20.1-alpine3.16 as web
+FROM node:18-alpine3.15 as web
 WORKDIR /code
+RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
 COPY web ./web
 COPY package.json ./package.json
 COPY yarn.lock ./yarn.lock

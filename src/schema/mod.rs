@@ -196,3 +196,15 @@ impl UserInfo {
     UserInfo { user, tags, props }
   }
 }
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct Liveness {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub redis: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub sqlite: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub msg: Option<String>,
+  #[serde(default = "now_fmt")]
+  pub created_at: String,
+}
