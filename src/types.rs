@@ -1,14 +1,11 @@
 use crate::error::Error;
 use desire::IntoResponse;
 use desire::Response;
-use std::sync::Arc;
-use std::sync::Mutex;
 pub type ApiResult<T> = Result<Resp<T>, Error>;
 pub type AnyResult<T> = Result<T, anyhow::Error>;
-pub type ApiAnyResult<T> = Result<T, Error>;
 pub type ApiPageResult<T> = Result<Resp<PageData<T>>, Error>;
 pub type ApiOptionResult<T> = Result<Resp<Option<T>>, Error>;
-
+pub type Pool = sqlx::Pool<sqlx::Sqlite>;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Resp<T = String> {
@@ -26,13 +23,6 @@ where
       success: true,
       msg: "OK".to_string(),
       data: Some(data),
-    }
-  }
-  pub fn error(error: String) -> Self {
-    Resp {
-      success: false,
-      msg: error,
-      data: None,
     }
   }
 }
@@ -53,7 +43,7 @@ where
   T: Serialize + Send,
 {
   pub list: Vec<T>,
-  pub total: u64,
+  pub total: i64,
 }
 
 impl<T> PageData<T>
@@ -61,9 +51,7 @@ where
   T: Serialize + Send,
 {
   #[allow(dead_code)]
-  pub fn new(list: Vec<T>, total: u64) -> Self {
+  pub fn new(list: Vec<T>, total: i64) -> Self {
     PageData { list, total }
   }
 }
-
-pub type State<T> = Arc<Mutex<T>>;
