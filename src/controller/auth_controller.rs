@@ -67,11 +67,9 @@ pub async fn signin(mut req: Request) -> ApiResult<TokenInfo> {
 
 pub async fn vcode(req: Request) -> ApiResult<VCode> {
   let token_data = req
-    .inner
     .extensions()
     .get::<TokenData>()
-    .ok_or_else(|| anyhow::anyhow!("token is none"))
-    .map(|x| x.clone())?;
+    .ok_or(option_error("TokenData"))?;
   let client = req
     .extensions()
     .get::<redis::Client>()
