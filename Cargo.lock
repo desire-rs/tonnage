@@ -113,7 +113,6 @@ dependencies = [
  "http-body-util",
  "hyper",
  "mime",
- "once_cell",
  "route-recognizer",
  "serde",
  "serde_json",
@@ -121,8 +120,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]
@@ -301,7 +298,7 @@ checksum = "c4a1e36c821dbe04574f602848a19f742f4fb3c98d40449f11bcad18d6b17421"
 [[package]]
 name = "hyper"
 version = "1.0.0-dev.0"
-source = "git+https://github.com/hyperium/hyper?branch=master#bd7928f3dd6a8461f0f0fdf7ee0fd95c2f156f88"
+source = "git+https://github.com/hyperium/hyper#bd7928f3dd6a8461f0f0fdf7ee0fd95c2f156f88"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -751,7 +748,7 @@ dependencies = [
 
 [[package]]
 name = "tonnage"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -834,16 +831,6 @@ name = "unicode-ident"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcc811dc4066ac62f84f11307873c4850cb653bfa9b1719cee2bd2204a4bc5dd"
-
-[[package]]
-name = "uuid"
-version = "1.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd6469f4314d5f1ffec476e05f17cc9a78bc7a27a6a857842170bdf8d6f98d2f"
-dependencies = [
- "getrandom",
- "serde",
-]
 
 [[package]]
 name = "valuable"
