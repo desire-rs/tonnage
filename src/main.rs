@@ -60,6 +60,7 @@ async fn main() -> AnyResult<()> {
 
   app.post("/signin", auth_controller::signin);
   app.post("/signup", auth_controller::signup);
+  app.post("/vcode", auth_controller::vcode);
 
   app.get("/user", user_controller::get_all);
   app.post("/user", user_controller::create);

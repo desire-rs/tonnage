@@ -1,13 +1,14 @@
 use crate::config::JWT_SECRET;
 use crate::error::option_error;
 use crate::error::Error;
-use crate::schema::{Claims, SignIn, TokenInfo, User};
+use crate::schema::{Claims, SignIn, TokenData, TokenInfo, User, VCode};
 use crate::service;
 use crate::types::{ApiResult, Pool, Resp};
+use crate::utils::gen_code;
 use crate::utils::{gen_salt, sha_256};
 use desire::Request;
 use jsonwebtoken::{encode, EncodingKey, Header};
-
+use redis::AsyncCommands;
 pub async fn signup(mut req: Request) -> ApiResult<TokenInfo> {
   let mut user = req.body::<User>().await?;
   let pool = req.extensions().get::<Pool>().ok_or(option_error("pool"))?;
@@ -62,4 +63,29 @@ pub async fn signin(mut req: Request) -> ApiResult<TokenInfo> {
   )?;
   let info = TokenInfo::new(token);
   Ok(Resp::data(info))
+}
+
+pub async fn vcode(req: Request) -> ApiResult<VCode> {
+  let token_data = req
+    .inner
+    .extensions()
+    .get::<TokenData>()
+    .ok_or_else(|| anyhow::anyhow!("token is none"))
+    .map(|x| x.clone())?;
+  let client = req
+    .extensions()
+    .get::<redis::Client>()
+    .ok_or(option_error("redis"))?;
+  let mut redis = client.get_async_connection().await?;
+  let user_id = token_data.uid;
+  let key = format!("vcode:tonnage:{}", user_id);
+  let exists: bool = redis.exists(&key).await?;
+  if !exists {
+    let code = gen_code(6);
+    redis.set_nx(&key, &code).await?;
+    redis.expire(&key, 60).await?;
+  }
+  let code: String = redis.get(&key).await?;
+  let result = VCode::new(user_id, &code);
+  Ok(Resp::data(result))
 }

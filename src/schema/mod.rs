@@ -208,3 +208,21 @@ pub struct Liveness {
   #[serde(default = "now_fmt")]
   pub created_at: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct VCode {
+  pub user_id: i64,
+  pub code: String,
+  #[serde(default = "now_fmt")]
+  pub created_at: String,
+}
+
+impl VCode {
+  pub fn new(user_id: i64, code: &str) -> Self {
+    VCode {
+      user_id,
+      code: code.to_string(),
+      created_at: now_fmt(),
+    }
+  }
+}
