@@ -6,7 +6,7 @@ use desire::Request;
 use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
   let pool = get_pool().await?;
-  let query = req.get_query::<WeightQuery>()?;
+  let query = req.query::<WeightQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
   let mut page = 1;
@@ -40,12 +40,12 @@ pub async fn get_all(req: Request) -> ApiPageResult<Weight> {
 }
 
 pub async fn get_by_id(req: Request) -> ApiResult<Weight> {
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = service::get_weight_by_id(id).await?;
   Ok(Resp::data(result))
 }
 
-pub async fn create(req: Request) -> ApiResult<Weight> {
+pub async fn create(mut req: Request) -> ApiResult<Weight> {
   let item = req.body::<Weight>().await?;
   let sql = "INSERT into weights(user_id, weight, created_at, updated_at) VALUES (?,?,?,?)";
   info!("sql {}", sql);
@@ -62,9 +62,9 @@ pub async fn create(req: Request) -> ApiResult<Weight> {
   Ok(Resp::data(result))
 }
 
-pub async fn update(req: Request) -> ApiResult<Weight> {
+pub async fn update(mut req: Request) -> ApiResult<Weight> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let weight = req.body::<Weight>().await?;
   let result = sqlx::query("UPDATE weights SET weight = ?, updated_at = ? WHERE id = ?")
     .bind(&weight.weight)
@@ -79,7 +79,7 @@ pub async fn update(req: Request) -> ApiResult<Weight> {
 
 pub async fn remove(req: Request) -> ApiResult<String> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = sqlx::query("DELETE FROM weights where id = ?")
     .bind(id)
     .execute(&pool)

@@ -7,7 +7,7 @@ use desire::Request;
 use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<User> {
   let pool = get_pool().await?;
-  let query = req.get_query::<UserQuery>()?;
+  let query = req.query::<UserQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
   let mut page = 1;
@@ -55,12 +55,12 @@ pub async fn get_all(req: Request) -> ApiPageResult<User> {
 }
 
 pub async fn get_by_id(req: Request) -> ApiResult<User> {
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = service::get_user_by_id(id).await?;
   Ok(Resp::data(result))
 }
 
-pub async fn create(req: Request) -> ApiResult<User> {
+pub async fn create(mut req: Request) -> ApiResult<User> {
   let mut user = req.body::<User>().await?;
   let salt = gen_salt();
   let password = sha_256(&user.password.unwrap(), &salt);
@@ -86,9 +86,9 @@ pub async fn create(req: Request) -> ApiResult<User> {
   Ok(Resp::data(result))
 }
 
-pub async fn update(req: Request) -> ApiResult<User> {
+pub async fn update(mut req: Request) -> ApiResult<User> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let user = req.body::<User>().await?;
   let result = sqlx::query("UPDATE users SET nickname = ?,email=?,mobile =?,avatar =?,gender=?, updated_at = ? WHERE id = ?")
     .bind(&user.nickname)
@@ -107,7 +107,7 @@ pub async fn update(req: Request) -> ApiResult<User> {
 
 pub async fn remove(req: Request) -> ApiResult<String> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = sqlx::query("DELETE FROM users where id = ?")
     .bind(id)
     .execute(&pool)

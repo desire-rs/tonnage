@@ -8,7 +8,7 @@ use crate::utils::{gen_salt, sha_256};
 use desire::Request;
 use jsonwebtoken::{encode, EncodingKey, Header};
 
-pub async fn signup(req: Request) -> ApiResult<TokenInfo> {
+pub async fn signup(mut req: Request) -> ApiResult<TokenInfo> {
   let pool = get_pool().await?;
   let mut user = req.body::<User>().await?;
   let salt = gen_salt();
@@ -41,7 +41,7 @@ pub async fn signup(req: Request) -> ApiResult<TokenInfo> {
   Ok(Resp::data(info))
 }
 
-pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
+pub async fn signin(mut req: Request) -> ApiResult<TokenInfo> {
   let pool = get_pool().await?;
   let login_user = req.body::<SignIn>().await?;
   let user: User = sqlx::query_as("SELECT * from users WHERE username = ? LIMIT 1")

@@ -6,7 +6,7 @@ use desire::Request;
 
 pub async fn chart(req: Request) -> ApiPageResult<Chart> {
   let pool = get_pool().await?;
-  let query = req.get_query::<ChartQuery>()?;
+  let query = req.query::<ChartQuery>()?;
   let dt = chrono::Utc::now();
 
   let date_end = dt.format("%Y-%m-%d %H:%M:%S").to_string();

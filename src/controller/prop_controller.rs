@@ -6,7 +6,7 @@ use desire::Request;
 use tokio_stream::StreamExt;
 pub async fn get_all(req: Request) -> ApiPageResult<Prop> {
   let pool = get_pool().await?;
-  let query = req.get_query::<PropQuery>()?;
+  let query = req.query::<PropQuery>()?;
   let mut wheres = format!("1 = 1");
   let mut limit = 20;
   let mut page = 1;
@@ -43,12 +43,12 @@ pub async fn get_all(req: Request) -> ApiPageResult<Prop> {
 }
 
 pub async fn get_by_id(req: Request) -> ApiResult<Prop> {
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = service::get_prop_by_id(id).await?;
   Ok(Resp::data(result))
 }
 
-pub async fn create(req: Request) -> ApiResult<Prop> {
+pub async fn create(mut req: Request) -> ApiResult<Prop> {
   let prop = req.body::<Prop>().await?;
   let sql = "INSERT into props(user_id, name, value, created_at, updated_at) VALUES (?,?,?,?,?)";
   info!("sql {}", sql);
@@ -66,9 +66,9 @@ pub async fn create(req: Request) -> ApiResult<Prop> {
   Ok(Resp::data(result))
 }
 
-pub async fn update(req: Request) -> ApiResult<Prop> {
+pub async fn update(mut req: Request) -> ApiResult<Prop> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let prop = req.body::<Prop>().await?;
   let result = sqlx::query("UPDATE props SET name = ?, value = ?, updated_at = ? WHERE id = ?")
     .bind(&prop.name)
@@ -84,7 +84,7 @@ pub async fn update(req: Request) -> ApiResult<Prop> {
 
 pub async fn remove(req: Request) -> ApiResult<String> {
   let pool = get_pool().await?;
-  let id = req.get_param::<i64>("id")?;
+  let id = req.param::<i64>("id")?;
   let result = sqlx::query("DELETE FROM props where id = ?")
     .bind(id)
     .execute(&pool)
