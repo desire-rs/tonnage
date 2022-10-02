@@ -15,6 +15,8 @@ pub enum Error {
   SqlxError(#[from] sqlx::Error),
   #[error("jsonwebtoken::errors::Error {0:?}")]
   JwtError(#[from] jsonwebtoken::errors::Error),
+  #[error("unwrap `{0}` is not none")]
+  OptionError(String),
 }
 
 impl IntoResponse for Error {
@@ -22,4 +24,8 @@ impl IntoResponse for Error {
     let val = self.to_string();
     Response::with_status(500, val)
   }
+}
+
+pub fn option_error(msg: &str) -> Error {
+  Error::OptionError(msg.to_string())
 }

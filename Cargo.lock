@@ -202,7 +202,7 @@ dependencies = [
 [[package]]
 name = "desire"
 version = "0.0.1"
-source = "git+https://github.com/desire-rs/desire?branch=develop#8386ec6412a451db431359309474fefd8efeb448"
+source = "git+https://github.com/desire-rs/desire?branch=develop#12dfc1b807ae583b584f2faf60f4c1c79d957470"
 dependencies = [
  "anyhow",
  "async-trait",

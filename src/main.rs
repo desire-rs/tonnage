@@ -41,6 +41,7 @@ async fn main() -> AnyResult<()> {
   let mut app = Router::new();
   app.with(middleware::Auth);
   app.with(middleware::Logger);
+  app.with(middleware::DB);
   app.get("/", ServeFile::new("dist/index.html".into()));
   app.get("/assets/:file", ServeDir::new("dist".into()));
 

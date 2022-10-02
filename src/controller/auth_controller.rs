@@ -50,8 +50,6 @@ pub async fn signin(req: Request) -> ApiResult<TokenInfo> {
     .await?;
 
   let password = sha_256(&login_user.password, &user.salt.unwrap());
-
-  info!("password {}", password);
   if password != user.password.unwrap() {
     return Err(Error::AnyhowError(anyhow::anyhow!(
       "password is not correct"

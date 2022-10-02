@@ -57,7 +57,6 @@ pub async fn chart(req: Request) -> ApiPageResult<Chart> {
 
   let count_sql = format!("SELECT COUNT(1) total FROM weights WHERE {}", wheres);
   let total: (i64,) = sqlx::query_as(&count_sql).fetch_one(&pool).await?;
-
   let rows: Vec<Chart> = sqlx::query_as(&sql).fetch_all(&pool).await?;
   let result = PageData::new(rows, total.0);
   Ok(Resp::data(result))

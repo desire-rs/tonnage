@@ -8,7 +8,7 @@ use desire::Request;
 use desire::Result;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use std::time::Instant;
-
+use crate::libs::get_pool;
 pub struct Logger;
 
 #[async_trait::async_trait]
@@ -75,5 +75,15 @@ impl Middleware for Auth {
         .into_response()
       }
     }
+  }
+}
+
+pub struct DB;
+#[async_trait::async_trait]
+impl Middleware for DB {
+  async fn handle(&self, mut req: Request, next: desire::Next<'_>) -> Result {
+    let pool = get_pool().await?;
+    req.inner.extensions_mut().insert(pool);
+    next.run(req).await
   }
 }
