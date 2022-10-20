@@ -17,8 +17,12 @@ pub enum Error {
   RedisError(#[from] redis::RedisError),
   #[error("jsonwebtoken::errors::Error {0:?}")]
   JwtError(#[from] jsonwebtoken::errors::Error),
+  #[error("multer::Error `{0:?}`")]
+  MulterError(#[from] multer::Error),
   #[error("unwrap `{0}` is not none")]
   OptionError(String),
+  #[error("error message `{0}`")]
+  MessageError(String),
 }
 
 impl IntoResponse for Error {
@@ -30,4 +34,8 @@ impl IntoResponse for Error {
 
 pub fn option_error(msg: &str) -> Error {
   Error::OptionError(msg.to_string())
+}
+
+pub fn message_error(msg: &str) -> Error {
+  Error::MessageError(msg.to_string())
 }
