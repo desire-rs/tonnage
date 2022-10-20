@@ -22,6 +22,7 @@
   "devDependencies": {
     "@parcel/transformer-pug": "2.7.0",
     "@parcel/transformer-vue": "2.7.0",
+    "@types/axios": "^0.14.0",
     "@types/lodash": "^4.14.185",
     "buffer": "^6.0.3",
     "parcel": "^2.7.0",

@@ -7,7 +7,7 @@
       button(type="submit" @click="submit" class="submit") 登录
 </template>
 
-<script lang="ts">
+<script>
 import axios from "axios";
 axios.defaults.baseURL = window.location.href.split("#")[0];
 export default {
