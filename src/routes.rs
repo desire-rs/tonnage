@@ -11,6 +11,7 @@ pub fn default_routes() -> desire::Router {
   app.get("/", ServeFile::new("dist/index.html".into()));
   app.get("/assets/:file", ServeDir::new("dist".into()));
   app.get("images/:file", ServeDir::new("storage/images".into()));
+  app.get("videos/:file", ServeDir::new("storage/videos".into()));
 
   app.get("/hello", default_controller::hello);
   app.get("/hello_page", default_controller::hello_page);

@@ -54,6 +54,9 @@ export default {
     async submit() {
       let data = { user_id: this.userInfo.user.id, weight: this.weight };
       const result = await axios.post("/weight", data);
+      setTimeout(() => {
+        this.loadData();
+      }, 200)
       console.log(result.data);
     },
     async loadData() {

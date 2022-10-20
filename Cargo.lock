@@ -261,7 +261,7 @@ dependencies = [
 [[package]]
 name = "desire"
 version = "0.0.1"
-source = "git+https://github.com/desire-rs/desire?branch=hyper_0.14.20#ab1183c32afc2fb7249c093ae5a3724bc403531b"
+source = "git+https://github.com/desire-rs/desire?branch=hyper_0.14.20#339c2be0481f4a276b62f3d49b5ebacf0b86b796"
 dependencies = [
  "anyhow",
  "async-trait",

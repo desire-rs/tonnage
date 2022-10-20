@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use std::env;
 pub const JWT_SECRET: &'static str = "8B0271EC-EAA6-48B7-8161-F90B86F454E4";
-pub const EXEMPT_ROUTES: &[&str] = &["/", "/signin", "/signup", "/hello", "/assets", "/images" ,"/db_init"];
+pub const EXEMPT_ROUTES: &[&str] = &["/", "/signin", "/signup", "/hello", "/assets", "/images", "/videos" ,"/db_init"];
 pub static ADDR: Lazy<String> = Lazy::new(|| env::var("ADDR").expect("ADDR must be set"));
 pub static ENV_NAME: Lazy<String> =
   Lazy::new(|| env::var("ENV_NAME").expect("ENV_NAME must be set"));
