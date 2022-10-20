@@ -52,7 +52,7 @@ export default {
       this.loadData();
     },
     async submit() {
-      let data = { user_id: this.usersInfo.user.id, weight: this.weight };
+      let data = { user_id: this.userInfo.user.id, weight: this.weight };
       const result = await axios.post("/weight", data);
       console.log(result.data);
     },
